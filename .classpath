@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="lib/jackson-annotations-2.5.2.jar"/>
+	<classpathentry kind="lib" path="lib/jackson-core-2.5.2.jar"/>
+	<classpathentry kind="lib" path="lib/jackson-databind-2.5.2.jar"/>
+	<classpathentry kind="lib" path="lib/javax.ws.rs-api-2.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/jersey-client.jar"/>
+	<classpathentry kind="lib" path="lib/jersey-common.jar"/>
+	<classpathentry kind="lib" path="lib/hk2-api-2.3.0-b10.jar"/>
+	<classpathentry kind="lib" path="lib/jersey-guava-2.13.jar"/>
+	<classpathentry kind="lib" path="lib/hk2-locator-2.3.0-b10.jar"/>
+	<classpathentry kind="lib" path="lib/hk2-utils-2.3.0-b10.jar"/>
+	<classpathentry kind="lib" path="lib/javax.inject-2.3.0-b10.jar"/>
+	<classpathentry kind="lib" path="lib/javax.annotation-api-1.2.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
