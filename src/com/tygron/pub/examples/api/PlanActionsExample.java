@@ -112,6 +112,7 @@ public class PlanActionsExample {
 				boolean linkType = popup.get("linkType").equals("BUILDINGS");
 				boolean requiresDate = popup.get("type").equals("INTERACTION_WITH_DATE");
 
+				// A message may have several answers. Find the one that says "Yes".
 				for (Map<String, Object> answer : (List<Map<String, Object>>) popup.get("answers")) {
 					if (answer.get("contents").toString().toLowerCase().equals("yes")) {
 						answerID = answer.get("id").toString();
