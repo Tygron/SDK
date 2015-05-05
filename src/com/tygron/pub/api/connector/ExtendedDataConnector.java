@@ -66,7 +66,7 @@ public class ExtendedDataConnector extends DataConnector {
 		}
 
 		DataPackage data = sendDataToServer(CLOSE_SESSION_EVENT,
-				getServerSlot(), getClientToken(), TRUE);
+				getServerSlot(), getClientToken(), FALSE);
 
 		return data.getContent().equals("true");
 	}
