@@ -40,15 +40,20 @@ public class ExtendedDataConnector extends DataConnector {
 
 	/**
 	 * Pause or unpause the game.
-	 * @param allowGameInteraction Whether players are allowed to interact with the game
+	 * 
+	 * @param allowGameInteraction
+	 *            Whether players are allowed to interact with the game
 	 */
 	public void allowGameInteraction(boolean allowInteraction) {
-		sendDataToServerSession(SETTINGS_ALLOW_GAME_INTERACTION_EVENT, (allowInteraction ? TRUE : FALSE));
+		sendDataToServerSession(SETTINGS_ALLOW_GAME_INTERACTION_EVENT,
+				(allowInteraction ? TRUE : FALSE));
 	}
 
 	/**
 	 * Close the client's session with the server.
-	 * @return True if the session on the server has closed as well. False if the session has remained open.
+	 * 
+	 * @return True if the session on the server has closed as well. False if
+	 *         the session has remained open.
 	 */
 	public boolean closeConnectedSession() throws IllegalStateException {
 		if (!ignoreChecks) {
@@ -60,7 +65,8 @@ public class ExtendedDataConnector extends DataConnector {
 			}
 		}
 
-		DataPackage data = sendDataToServer(CLOSE_SESSION_EVENT, getServerSlot(), getClientToken(), TRUE);
+		DataPackage data = sendDataToServer(CLOSE_SESSION_EVENT,
+				getServerSlot(), getClientToken(), TRUE);
 
 		return data.getContent().equals("true");
 	}
@@ -70,9 +76,11 @@ public class ExtendedDataConnector extends DataConnector {
 	}
 
 	/**
-	 * Indicates whether checks for missing credentials and such should be performed when performing certain
-	 * complex operations.
-	 * @return True when checks are being skipped. False when checks will be performed.
+	 * Indicates whether checks for missing credentials and such should be
+	 * performed when performing certain complex operations.
+	 * 
+	 * @return True when checks are being skipped. False when checks will be
+	 *         performed.
 	 */
 	public boolean getIgnoreChecks() {
 		return ignoreChecks;
@@ -80,29 +88,40 @@ public class ExtendedDataConnector extends DataConnector {
 
 	/**
 	 * Plan the construction of a building.
-	 * @param stakeholderID The enacting stakeholder
-	 * @param functionID The id of the function for the building (the building type)
-	 * @param floors The amount of floors this building should have
-	 * @param location A multipolygon String
+	 * 
+	 * @param stakeholderID
+	 *            The enacting stakeholder
+	 * @param functionID
+	 *            The id of the function for the building (the building type)
+	 * @param floors
+	 *            The amount of floors this building should have
+	 * @param location
+	 *            A multipolygon String
 	 */
-	public void planBuilding(int stakeholderID, int functionID, int floors, String location) {
-		sendDataToServerSession(BUILDING_PLAN_CONSTRUCTION_EVENT, Integer.toString(stakeholderID),
-				Integer.toString(functionID), Integer.toString(floors), location);
+	public void planBuilding(int stakeholderID, int functionID, int floors,
+			String location) {
+		sendDataToServerSession(BUILDING_PLAN_CONSTRUCTION_EVENT,
+				Integer.toString(stakeholderID), Integer.toString(functionID),
+				Integer.toString(floors), location);
 	}
 
 	/**
 	 * Select a stakeholder for use during the session
+	 * 
 	 * @param stakeholderID
-	 * @return True when the stakeholder was selected successfully. False when the stakeholder was already
-	 *         selected by another client
-	 * @throws IllegalStateException If this DataConnector is missing credentials for interacting with the
-	 *             server, this exception is thrown.
-	 * @throws IllegalArgumentException If the response from the server indicates either the client ID or the
-	 *             stakeholder ID is invalid, this exception is thrown.
+	 * @return True when the stakeholder was selected successfully. False when
+	 *         the stakeholder was already selected by another client
+	 * @throws IllegalStateException
+	 *             If this DataConnector is missing credentials for interacting
+	 *             with the server, this exception is thrown.
+	 * @throws IllegalArgumentException
+	 *             If the response from the server indicates either the client
+	 *             ID or the stakeholder ID is invalid, this exception is
+	 *             thrown.
 	 */
 
-	public boolean selectStakeholder(int stakeholderID) throws IllegalStateException,
-	IllegalArgumentException {
+	public boolean selectStakeholder(int stakeholderID)
+			throws IllegalStateException, IllegalArgumentException {
 		if (!ignoreChecks) {
 			if (getServerSlot() == null) {
 				throw new IllegalStateException("No serverslot set.");
@@ -115,19 +134,22 @@ public class ExtendedDataConnector extends DataConnector {
 			}
 		}
 
-		DataPackage data = sendDataToServerSession(STAKEHOLDER_SELECT_EVENT, Integer.toString(stakeholderID),
+		DataPackage data = sendDataToServerSession(STAKEHOLDER_SELECT_EVENT,
+				Integer.toString(stakeholderID),
 				Integer.toString(getClientID()));
 
 		switch (data.getContent()) {
-			case TRUE:
-				return true;
-			case FALSE:
-				return false;
-			case NULL:
-				throw new IllegalArgumentException("No stakeholder with ID: " + stakeholderID);
-			default:
-				throw new IllegalArgumentException("Unexpected response (probably non-existant client ID: "
-						+ getClientID());
+		case TRUE:
+			return true;
+		case FALSE:
+			return false;
+		case NULL:
+			throw new IllegalArgumentException("No stakeholder with ID: "
+					+ stakeholderID);
+		default:
+			throw new IllegalArgumentException(
+					"Unexpected response (probably non-existant client ID: "
+							+ getClientID());
 		}
 	}
 
@@ -137,7 +159,10 @@ public class ExtendedDataConnector extends DataConnector {
 
 	/**
 	 * Set whether to check for missing credentials and such.
-	 * @param ignoreChecks Whether to ignore checks before performing certain complex operations.
+	 * 
+	 * @param ignoreChecks
+	 *            Whether to ignore checks before performing certain complex
+	 *            operations.
 	 */
 	public void setIgnoreChecks(boolean ignoreChecks) {
 		this.ignoreChecks = ignoreChecks;
@@ -146,49 +171,74 @@ public class ExtendedDataConnector extends DataConnector {
 
 	/**
 	 * Start a session on the server, and connect to it.
-	 * @param serverAddress The address for the server.
-	 * @param username The username to use to authenticate.
-	 * @param password The password to use to authenticate.
-	 * @param gameName The name of the project to start
-	 * @param language The language in which to start the project (leave null for default)
-	 * @param gameMode The mode in which the project should be started. This should match a GameMode enum's
-	 *            String representation.
-	 * @param clientType The type of client as which to connect to the game. This should match a ClientType
-	 *            enum's String representation.
-	 * @param clientAddress The IP-address of your client.
-	 * @param clientName The name of your client
-	 * @return True when the session is started successfully. Failure conditions cause exceptions.
-	 * @throws NullPointerException When a required argument to this method is null, this exception is
-	 *             immediately thrown.
-	 * @throws IllegalArgumentException When the gameMode or clientType are invalid, this exception is thrown.
-	 * @throws UnexpectedException When the server responds in an unexpected fashion, this exception is
-	 *             immediately thrown.
+	 * 
+	 * @param serverAddress
+	 *            The address for the server.
+	 * @param username
+	 *            The username to use to authenticate.
+	 * @param password
+	 *            The password to use to authenticate.
+	 * @param gameName
+	 *            The name of the project to start
+	 * @param language
+	 *            The language in which to start the project (leave null for
+	 *            default)
+	 * @param gameMode
+	 *            The mode in which the project should be started. This should
+	 *            match a GameMode enum's String representation.
+	 * @param clientType
+	 *            The type of client as which to connect to the game. This
+	 *            should match a ClientType enum's String representation.
+	 * @param clientAddress
+	 *            The IP-address of your client.
+	 * @param clientName
+	 *            The name of your client
+	 * @return True when the session is started successfully. Failure conditions
+	 *         cause exceptions.
+	 * @throws NullPointerException
+	 *             When a required argument to this method is null, this
+	 *             exception is immediately thrown.
+	 * @throws IllegalArgumentException
+	 *             When the gameMode or clientType are invalid, this exception
+	 *             is thrown.
+	 * @throws UnexpectedException
+	 *             When the server responds in an unexpected fashion, this
+	 *             exception is immediately thrown.
 	 */
-	public boolean startSessionAndConnect(final String serverAddress, final String username,
-			final String password, final String gameName, final String language, final String gameMode,
-			final String clientType, final String clientAddress, final String clientName)
-					throws NullPointerException, IllegalArgumentException, UnexpectedException {
+	public boolean startSessionAndConnect(final String serverAddress,
+			final String username, final String password,
+			final String gameName, final String language,
+			final String gameMode, final String clientType,
+			final String clientAddress, final String clientName)
+			throws NullPointerException, IllegalArgumentException,
+			UnexpectedException {
 
 		if (!ignoreChecks) {
 			if (serverAddress == null && (getServerAddress() == null)) {
-				throw new NullPointerException("Serveraddress is null, but is required");
+				throw new NullPointerException(
+						"Serveraddress is null, but is required");
 			}
 			if (username == null && !hasCredentials()) {
-				throw new NullPointerException("Username is null, but is required");
+				throw new NullPointerException(
+						"Username is null, but is required");
 			}
 			if (password == null && !hasCredentials()) {
-				throw new NullPointerException("Password is null, but is required");
+				throw new NullPointerException(
+						"Password is null, but is required");
 			}
 
 			if (gameName == null) {
-				throw new NullPointerException("Game name is null, but is required");
+				throw new NullPointerException(
+						"Game name is null, but is required");
 			}
 
 			if (clientAddress == null) {
-				throw new NullPointerException("Client address is null, but is required");
+				throw new NullPointerException(
+						"Client address is null, but is required");
 			}
 			if (clientName == null) {
-				throw new NullPointerException("Client name is null, but is required");
+				throw new NullPointerException(
+						"Client name is null, but is required");
 			}
 
 			if (GameMode.valueOf(gameMode) == null) {
@@ -208,18 +258,26 @@ public class ExtendedDataConnector extends DataConnector {
 			setServerAddress(serverAddress);
 		}
 
-		DataPackage data = sendDataToServer(NEW_SESSION_EVENT, gameMode, gameName, language, null, null);
+		DataPackage data = sendDataToServer(NEW_SESSION_EVENT, gameMode,
+				gameName, language, null, null);
 		String slot = data.getContent();
+
+		if (slot.equals("-1")) {
+			throw new UnexpectedException("No server slot assigned");
+		}
 
 		try {
 			setServerSlot(slot);
 		} catch (IllegalArgumentException e) {
-			throw new UnexpectedException("Server slot response was unexpected: " + slot, e);
+			throw new UnexpectedException(
+					"Server slot response was unexpected: " + slot, e);
 		}
 
-		data = sendDataToServer(JOIN_SESSION_EVENT, slot, clientType, clientAddress, clientName, null);
+		data = sendDataToServer(JOIN_SESSION_EVENT, slot, clientType,
+				clientAddress, clientName, null);
 
-		JoinSessionObject joinObject = JsonUtils.mapJsonToType(data.getContent(), JoinSessionObject.class);
+		JoinSessionObject joinObject = JsonUtils.mapJsonToType(
+				data.getContent(), JoinSessionObject.class);
 
 		setServerToken(joinObject.serverToken);
 		setClientToken(joinObject.clientToken);
