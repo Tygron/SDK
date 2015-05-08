@@ -50,7 +50,6 @@ public class PlanActionsExample {
 		System.out.println("Server slot: " + dataConnector.getServerSlot());
 		System.out.println("Server token: " + dataConnector.getServerToken());
 		System.out.println("Client token: " + dataConnector.getClientToken());
-		System.out.println("Client id: " + dataConnector.getClientID());
 
 		// Start the game
 		dataConnector.allowGameInteraction(true);
@@ -64,6 +63,7 @@ public class PlanActionsExample {
 		}
 
 		if (!success) {
+			System.err.println("We failed to select a stakeholder");
 			success = dataConnector.closeConnectedSession();
 		}
 
@@ -127,7 +127,7 @@ public class PlanActionsExample {
 				}
 
 			} catch (ClassCastException e) {
-				System.out.println("We met some unexpected values...");
+				System.err.println("We met some unexpected values...");
 			}
 		}
 

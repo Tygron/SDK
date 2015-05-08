@@ -11,8 +11,9 @@ public enum GameMode {
 	}
 
 	public boolean isValidClientType(final String clientType) {
+		ClientType provided = ClientType.valueOf(clientType);
 		for (ClientType c : clientTypes) {
-			if (c.toString().equals(clientType)) {
+			if (c.equals(provided)) {
 				return true;
 			}
 		}

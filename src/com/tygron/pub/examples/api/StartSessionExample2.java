@@ -33,7 +33,7 @@ public class StartSessionExample2 {
 		try {
 			success = dataConnector.startSessionAndConnect(ExampleSettings.SERVER, ExampleSettings.USERNAME,
 					ExampleSettings.PASSWORD, ExampleGame.GAME, ExampleGame.LANGUAGE,
-					GameMode.MULTI_PLAYER.toString(), ClientType.VIEWER.toString(),
+					GameMode.MULTI_PLAYER.toString(), ClientType.ADMIN.toString(),
 					ExampleSettings.CLIENT_ADDRESS, ExampleSettings.CLIENT_NAME);
 		} catch (UnexpectedException e) {
 			e.printStackTrace();
@@ -48,7 +48,6 @@ public class StartSessionExample2 {
 		System.out.println("Server slot: " + dataConnector.getServerSlot());
 		System.out.println("Server token: " + dataConnector.getServerToken());
 		System.out.println("Client token: " + dataConnector.getClientToken());
-		System.out.println("Client id: " + dataConnector.getClientID());
 
 		// Retrieve the size of the list of buildings, and output it.
 		DataPackage data = dataConnector.getDataFromServerSession("buildings/size");
@@ -95,6 +94,8 @@ public class StartSessionExample2 {
 		if (!success) {
 			System.out.println("Failed to close session correctly.");
 			System.exit(-1);
+		} else {
+			System.out.println("Session closed");
 		}
 		System.exit(0);
 	}

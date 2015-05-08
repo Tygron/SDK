@@ -57,12 +57,7 @@ public class DataConnector {
 	 * @param dataConnector
 	 */
 	public DataConnector(DataConnector dataConnector) {
-		this.username = dataConnector.username;
-		this.password = dataConnector.password;
-		this.serverToken = dataConnector.serverToken;
-		this.clientToken = dataConnector.clientToken;
-		this.serverSlot = dataConnector.serverSlot;
-		this.serverAddress = dataConnector.serverAddress;
+		duplicateSettings(dataConnector);
 	}
 
 	/**
@@ -124,6 +119,19 @@ public class DataConnector {
 		return prefix + url + postfix;
 	}
 
+	/**
+	 * Duplicate the settings from another DataConnector into this DataConnector.
+	 * @param dataConnector
+	 */
+	protected void duplicateSettings(DataConnector dataConnector) {
+		this.username = dataConnector.username;
+		this.password = dataConnector.password;
+		this.serverToken = dataConnector.serverToken;
+		this.clientToken = dataConnector.clientToken;
+		this.serverSlot = dataConnector.serverSlot;
+		this.serverAddress = dataConnector.serverAddress;
+	}
+
 	public String getClientToken() {
 		return this.clientToken;
 	}
@@ -175,6 +183,10 @@ public class DataConnector {
 		return this.serverToken;
 	}
 
+	public String getUsername() {
+		return this.username;
+	}
+
 	public boolean hasCredentials() {
 		return (this.username != null) && (this.password != null);
 	}
@@ -203,7 +215,7 @@ public class DataConnector {
 			if (getRequest) {
 				response = builder.get();
 			} else {
-				builder.header("f", "JSON");
+				// builder.header("f", "JSON");
 				String jsonParams = JsonUtils.mapObjectToJson(params);
 				response = builder.post(Entity.json(jsonParams));
 			}
@@ -324,7 +336,11 @@ public class DataConnector {
 	public void setServerSlot(final String serverSlot) throws IllegalArgumentException {
 		try {
 			Integer slot = Integer.parseInt(serverSlot);
-			this.serverSlot = slot.toString();
+			if (slot < 0) {
+				this.serverSlot = null;
+			} else {
+				this.serverSlot = slot.toString();
+			}
 		} catch (NumberFormatException e) {
 			throw new IllegalArgumentException("Server slot must be a number", e);
 		}
