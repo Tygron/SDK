@@ -1,7 +1,13 @@
 package com.tygron.pub.api.connector.enums;
 
 public enum GameMode {
-	SINGLE_PLAYER(ClientType.VIEWER), MULTI_PLAYER(ClientType.ADMIN, ClientType.VIEWER, ClientType.BEAMER), EDITOR(
+		SINGLE_PLAYER(
+			ClientType.VIEWER),
+		MULTI_PLAYER(
+			ClientType.ADMIN,
+			ClientType.VIEWER,
+			ClientType.BEAMER),
+		EDITOR(
 			ClientType.EDITOR);
 
 	private final ClientType[] clientTypes;

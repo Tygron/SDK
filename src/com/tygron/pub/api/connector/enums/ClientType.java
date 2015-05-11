@@ -1,5 +1,8 @@
 package com.tygron.pub.api.connector.enums;
 
 public enum ClientType {
-	VIEWER, ADMIN, BEAMER, EDITOR;
+		VIEWER,
+		ADMIN,
+		BEAMER,
+		EDITOR;
 }
