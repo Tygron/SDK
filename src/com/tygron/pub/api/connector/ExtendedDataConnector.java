@@ -153,19 +153,21 @@ public class ExtendedDataConnector extends DataConnector {
 		parameterCheckDetails(true, true, true);
 
 		generateMapSize(mapSize);
+		Log.verbose("Beginning map generation process: " + locationX + " by " + locationY);
 		DataPackage data = sendDataToServerSession(GENERATE_GAME_EVENT, Double.toString(locationX),
 				Double.toString(locationY));
 
 		int barsTotal;
 		int barsComplete;
 		int barsFailed;
+		int barsCompleteSoFar = 0;
 		do {
 			barsTotal = 0;
 			barsComplete = 0;
 			barsFailed = 0;
 			data = getDataFromServerSession(DATA_PROGRESS);
 
-			List<Object> progressList = DataListUtils.collapseMapInList(JsonUtils.mapJsonToList(data
+			List<Object> progressList = DataListUtils.collapseMapsInList(JsonUtils.mapJsonToList(data
 					.getContent()));
 			barsTotal = progressList.size();
 			for (Object progressBar : progressList) {
@@ -173,12 +175,16 @@ public class ExtendedDataConnector extends DataConnector {
 					throw new ClassCastException(
 							"Failed to properly parse progress for the geographical generation process.");
 				}
-				if (((Map<String, Object>) progressBar).get("progress").equals(1.0)) {
+				if (((Map) progressBar).get("progress").equals(1.0)) {
 					barsComplete++;
 				}
 				if (((Map) progressBar).get("failed").equals(TRUE)) {
 					barsFailed++;
 				}
+			}
+			if (barsCompleteSoFar < barsComplete) {
+				Log.verbose("Map generation progress complete: " + barsComplete + "/" + barsTotal);
+				barsCompleteSoFar = barsComplete;
 			}
 		} while (barsTotal > barsComplete);
 
@@ -346,7 +352,7 @@ public class ExtendedDataConnector extends DataConnector {
 	 *            enum's String representation.
 	 * @param clientAddress The IP-address of your client.
 	 * @param clientName The name of your client
-	 * @return True when the session is started successfully. Failure conditions cause exceptions.
+	 * @return True when the session is started successfully. False if the session failed to start.
 	 * @throws NullPointerException When a required argument to this method is null, this exception is
 	 *             immediately thrown.
 	 * @throws UnexpectedException When the server responds in an unexpected fashion, this exception is
@@ -355,7 +361,7 @@ public class ExtendedDataConnector extends DataConnector {
 	public boolean startSessionAndConnect(final String serverAddress, final String username,
 			final String password, final String gameName, final String language, final String gameMode,
 			final String clientType, final String clientAddress, final String clientName)
-					throws NullPointerException, IllegalArgumentException, UnexpectedException {
+			throws NullPointerException, IllegalArgumentException, UnexpectedException {
 
 		parameterCheckCredentials(true, serverAddress, true, username, password, clientAddress, clientName);
 		parameterCheckGameAndClient(true, gameMode, true, clientType, true);
@@ -375,6 +381,9 @@ public class ExtendedDataConnector extends DataConnector {
 			setServerSlot(slot);
 		} catch (IllegalArgumentException e) {
 			throw new UnexpectedException("Server slot response was unexpected: " + slot, e);
+		}
+		if (getServerSlot() == null) {
+			return false;
 		}
 
 		data = sendDataToServer(JOIN_SESSION_EVENT, slot, clientType, clientAddress, clientName, null);
