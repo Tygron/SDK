@@ -1,7 +1,6 @@
 package com.tygron.pub.api.connector;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
@@ -10,12 +9,16 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
-import com.tygron.pub.api.connector.listeners.UpdateListenerInterface;
 import com.tygron.pub.logger.Log;
 import com.tygron.pub.utils.JsonUtils;
 import com.tygron.pub.utils.StringUtils;
 
 public class DataConnector {
+
+	private enum RequestType {
+			GET,
+			POST;
+	}
 
 	private final static Client CLIENT;
 
@@ -29,6 +32,7 @@ public class DataConnector {
 	private final static String URL_SEGMENT_LISTS = "lists/";
 	private final static String URL_SEGMENT_EVENT = "event/";
 	private final static String URL_SEGMENT_SERVICES = "services/";
+	private final static String URL_SEGMENT_UPDATE = "update/";
 
 	private final static String URL_DELIMITER = "/";
 	private final static String URL_SEGMENT_JSON_QUERY_PARAMETER = "f=JSON";
@@ -40,10 +44,6 @@ public class DataConnector {
 
 	private String serverSlot = null;
 	private String serverAddress = null;
-
-	private int version = -1;
-
-	List<UpdateListenerInterface> listeners = new ArrayList<UpdateListenerInterface>();
 
 	/**
 	 * Create a new DataConnector, without any preset server or authentication information.
@@ -68,20 +68,16 @@ public class DataConnector {
 		this.setServerAddress(serverAddress);
 	}
 
-	/**
-	 * Register a listener on this connector, which will be informed of updates when this Connector listens
-	 * for updates and receives them.
-	 * @param listener The Listener to add.
-	 */
-	public void addListener(UpdateListenerInterface listener) {
-		if (!listeners.contains(listener) && listener != null) {
-			listeners.add(listener);
+	private String convertToParameters(Object... params) {
+		if (params != null && params.length == 1 && params[0] != null && params[0] instanceof Map) {
+			return JsonUtils.mapObjectToJson(params[0]);
 		}
+		return JsonUtils.mapObjectToJson(params);
 	}
 
 	private String createFullURL(final String url, final boolean addServer, final boolean addSlot,
 			final boolean addList, final boolean addServices, final boolean addEvent)
-					throws IllegalStateException {
+			throws IllegalStateException {
 		String prefix = StringUtils.EMPTY;
 		String postfix = StringUtils.EMPTY;
 
@@ -140,7 +136,7 @@ public class DataConnector {
 	 * Request data from [url]
 	 */
 	public DataPackage getData(String url) {
-		return makeRequestToURL(url, true);
+		return makeRequestToURL(url, RequestType.GET);
 	}
 
 	/**
@@ -148,7 +144,7 @@ public class DataConnector {
 	 */
 	public DataPackage getDataFromServer(String url) {
 		String fullURL = createFullURL(url, true, false, false, true, false);
-		return makeRequestToURL(fullURL, true);
+		return makeRequestToURL(fullURL, RequestType.GET);
 	}
 
 	/**
@@ -156,19 +152,7 @@ public class DataConnector {
 	 */
 	public DataPackage getDataFromServerSession(String url) {
 		String fullURL = createFullURL(url, true, true, true, false, false);
-		return makeRequestToURL(fullURL, true);
-	}
-
-	/**
-	 * Get a list of all listeners currently registered on this Connector.
-	 * @return A list of all listeners currently registered on this Connector.
-	 */
-	public List<UpdateListenerInterface> getListeners() {
-		return new ArrayList<UpdateListenerInterface>(listeners);
-	}
-
-	public int getListeningVersion() {
-		return this.version;
+		return makeRequestToURL(fullURL, RequestType.GET);
 	}
 
 	public String getServerAddress() {
@@ -191,19 +175,10 @@ public class DataConnector {
 		return (this.username != null) && (this.password != null);
 	}
 
-	public void listenForUpdate() {
-
-	}
-
-	public void listenForUpdate(int version) {
-		setListeningVersion(version);
-		listenForUpdate();
-	}
-
-	private Response makeRequest(String url, boolean getRequest, Object[] params)
+	private Response makeRequest(String url, RequestType requestType, Object[] params)
 			throws IllegalArgumentException {
 
-		Log.verbose("Making " + (getRequest ? "GET" : "POST") + " request to: " + url);
+		Log.verbose("Making " + requestType.toString() + " request to: " + url);
 
 		WebTarget target = CLIENT.target(url);
 		Response response;
@@ -212,12 +187,15 @@ public class DataConnector {
 		builder = setCredentials(builder);
 
 		try {
-			if (getRequest) {
-				response = builder.get();
-			} else {
-				// builder.header("f", "JSON");
-				String jsonParams = JsonUtils.mapObjectToJson(params);
-				response = builder.post(Entity.json(jsonParams));
+			switch (requestType) {
+				case GET:
+					response = builder.get();
+					break;
+				case POST:
+				default:
+					String jsonParams = convertToParameters(params);
+					response = builder.post(Entity.json(jsonParams));
+					break;
 			}
 		} catch (IllegalArgumentException e) {
 			if (e.getCause() != null) {
@@ -231,14 +209,14 @@ public class DataConnector {
 		return response;
 	}
 
-	public DataPackage makeRequestToURL(String url, boolean getRequest, String... params) {
+	public DataPackage makeRequestToURL(String url, RequestType requestType, Object... params) {
 		String receivedString = StringUtils.EMPTY;
 
 		long requestTime = -1;
 		int statusCode = -1;
 
 		requestTime = System.currentTimeMillis();
-		Response response = makeRequest(url, getRequest, params);
+		Response response = makeRequest(url, requestType, params);
 		requestTime = System.currentTimeMillis() - requestTime;
 
 		statusCode = response.getStatus();
@@ -252,32 +230,22 @@ public class DataConnector {
 		return new DataPackage(receivedString, requestTime, statusCode);
 	}
 
-	/**
-	 * Remove a registered listener from this Connector. The listener will no longer be informed of updates.
-	 * @param listener The listener to remove from this Connector.
-	 */
-	public void removeListener(UpdateListenerInterface listener) {
-		if (listeners.contains(listener)) {
-			listeners.remove(listener);
-		}
-	}
-
-	public void resetListeningVersion() {
-		this.version = -1;
+	public DataPackage makeRequestToURL(String url, RequestType requestType, String... params) {
+		return makeRequestToURL(url, requestType, (Object[]) params);
 	}
 
 	/**
 	 * Send POST request to [url], without parameters
 	 */
 	public DataPackage sendData(String url) {
-		return makeRequestToURL(url, false, (String[]) null);
+		return makeRequestToURL(url, RequestType.POST, null);
 	}
 
 	/**
 	 * Send POST request to [url]
 	 */
 	public DataPackage sendData(String url, String... params) {
-		return makeRequestToURL(url, false, params);
+		return makeRequestToURL(url, RequestType.POST, params);
 	}
 
 	/**
@@ -285,7 +253,7 @@ public class DataConnector {
 	 */
 	public DataPackage sendDataToServer(String url, String... params) {
 		String fullURL = createFullURL(url, true, false, false, true, true);
-		return makeRequestToURL(fullURL, false, params);
+		return makeRequestToURL(fullURL, RequestType.POST, params);
 	}
 
 	/**
@@ -293,7 +261,12 @@ public class DataConnector {
 	 */
 	public DataPackage sendDataToServerSession(String url, String... params) {
 		String fullURL = createFullURL(url, true, true, false, false, true);
-		return makeRequestToURL(fullURL, false, params);
+		return makeRequestToURL(fullURL, RequestType.POST, params);
+	}
+
+	public DataPackage sendUpdateRequestToServerSession(Map<String, Integer> params) {
+		String fullURL = createFullURL(URL_SEGMENT_UPDATE, true, true, false, false, false);
+		return makeRequestToURL(fullURL, RequestType.POST, params);
 	}
 
 	public void setClientToken(final String clientToken) {
@@ -314,10 +287,6 @@ public class DataConnector {
 		}
 
 		return builder;
-	}
-
-	public void setListeningVersion(int version) {
-		this.version = version;
 	}
 
 	public void setServerAddress(final String serverAddress) {
