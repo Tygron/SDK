@@ -15,6 +15,6 @@ public interface UpdateListenerInterface {
 	 * @param items The items that have been newly added or updated.
 	 * @param deletes The items that have been deleted.
 	 */
-	void update(Map<String, Map<Integer, Map>> items, Map<String, Map<Integer, Map>> deletes);
+	public void update(Map<String, Map<Integer, Map>> items, Map<String, Map<Integer, Map>> deletes);
 
 }
