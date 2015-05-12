@@ -133,6 +133,10 @@ public class UpdateMonitor {
 		return returnable;
 	}
 
+	public Map<String, Map<Integer, Map>> getData() {
+		return data;
+	}
+
 	public Map<Integer, Map> getData(String mapLink) {
 		return data.get(mapLink);
 	}
@@ -444,7 +448,7 @@ public class UpdateMonitor {
 	 */
 	public synchronized void stopListening() {
 		stopListening = true;
-		if (listening = false) {
+		if (listening == false) {
 			stopListening = false;
 		}
 	}
