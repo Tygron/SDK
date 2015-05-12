@@ -217,6 +217,40 @@ public class ExtendedDataConnector extends DataConnector {
 		return ignoreChecks;
 	}
 
+	public boolean joinSession(final String serverAddress, final String username, final String password,
+			final String clientType, final String serverSlot, final String clientAddress,
+			final String clientName) throws NullPointerException, UnexpectedException {
+		parameterCheckCredentials(true, serverAddress, true, username, password, serverSlot, clientAddress,
+				clientName);
+
+		if (!(username == null && password == null)) {
+			setUsernameAndPassword(username, password);
+		}
+
+		if (serverAddress != null) {
+			setServerAddress(serverAddress);
+		}
+
+		try {
+			setServerSlot(serverSlot);
+		} catch (IllegalArgumentException e) {
+			throw new UnexpectedException("Server slot response was unexpected or invalid: " + serverSlot, e);
+		}
+		if (getServerSlot() == null) {
+			return false;
+		}
+
+		DataPackage data = sendDataToServer(JOIN_SESSION_EVENT, serverSlot, clientType, clientAddress,
+				clientName, null);
+
+		JoinSessionObject joinObject = JsonUtils.mapJsonToType(data.getContent(), JoinSessionObject.class);
+
+		setServerToken(joinObject.serverToken);
+		setClientToken(joinObject.client.clientToken);
+
+		return true;
+	}
+
 	private void parameterCheck(final String... otherParams) {
 		if (!ignoreChecks) {
 			for (String s : otherParams) {
@@ -358,10 +392,10 @@ public class ExtendedDataConnector extends DataConnector {
 	 * @throws UnexpectedException When the server responds in an unexpected fashion, this exception is
 	 *             immediately thrown.
 	 */
-	public boolean startSessionAndConnect(final String serverAddress, final String username,
+	public boolean startSessionAndJoin(final String serverAddress, final String username,
 			final String password, final String gameName, final String language, final String gameMode,
 			final String clientType, final String clientAddress, final String clientName)
-			throws NullPointerException, IllegalArgumentException, UnexpectedException {
+			throws NullPointerException, UnexpectedException {
 
 		parameterCheckCredentials(true, serverAddress, true, username, password, clientAddress, clientName);
 		parameterCheckGameAndClient(true, gameMode, true, clientType, true);
@@ -377,22 +411,6 @@ public class ExtendedDataConnector extends DataConnector {
 		DataPackage data = sendDataToServer(NEW_SESSION_EVENT, gameMode, gameName, language, null, null);
 		String slot = data.getContent();
 
-		try {
-			setServerSlot(slot);
-		} catch (IllegalArgumentException e) {
-			throw new UnexpectedException("Server slot response was unexpected: " + slot, e);
-		}
-		if (getServerSlot() == null) {
-			return false;
-		}
-
-		data = sendDataToServer(JOIN_SESSION_EVENT, slot, clientType, clientAddress, clientName, null);
-
-		JoinSessionObject joinObject = JsonUtils.mapJsonToType(data.getContent(), JoinSessionObject.class);
-
-		setServerToken(joinObject.serverToken);
-		setClientToken(joinObject.client.clientToken);
-
-		return true;
+		return joinSession(null, null, null, clientType, slot, clientAddress, clientName);
 	}
 }

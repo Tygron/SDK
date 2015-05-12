@@ -33,7 +33,7 @@ public class PlanActionsExample {
 
 		// Start a session on the server and connect to it.
 		try {
-			success = dataConnector.startSessionAndConnect(ExampleSettings.SERVER, ExampleSettings.USERNAME,
+			success = dataConnector.startSessionAndJoin(ExampleSettings.SERVER, ExampleSettings.USERNAME,
 					ExampleSettings.PASSWORD, ExampleGame.GAME, ExampleGame.LANGUAGE,
 					GameMode.MULTI_PLAYER.toString(), ClientType.VIEWER.toString(),
 					ExampleSettings.CLIENT_ADDRESS, ExampleSettings.CLIENT_NAME);
