@@ -75,7 +75,7 @@ public class DataConnector {
 		return JsonUtils.mapObjectToJson(params);
 	}
 
-	private String createFullURL(final String url, final boolean addServer, final boolean addSlot,
+	protected String createFullURL(final String url, final boolean addServer, final boolean addSlot,
 			final boolean addList, final boolean addServices, final boolean addEvent)
 			throws IllegalStateException {
 		String prefix = StringUtils.EMPTY;

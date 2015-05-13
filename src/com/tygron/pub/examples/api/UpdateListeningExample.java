@@ -65,6 +65,7 @@ public class UpdateListeningExample {
 			System.exit(-1);
 		}
 		System.out.println("Client token (player): " + municipalConnector.getClientToken());
+		System.out.println(adminConnector.getBrowserURL());
 
 		// Select a stakeholder
 		try {

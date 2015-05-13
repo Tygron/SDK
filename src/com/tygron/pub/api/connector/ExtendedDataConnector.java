@@ -55,6 +55,8 @@ public class ExtendedDataConnector extends DataConnector {
 
 	public static final String DATA_PROGRESS = "progress/";
 
+	private final static String URL_SEGMENT_SERVER_TOKEN_PARAMETER = "token=";
+
 	private boolean ignoreChecks = false;
 
 	/**
@@ -209,6 +211,20 @@ public class ExtendedDataConnector extends DataConnector {
 	}
 
 	/**
+	 * A convenience method which returns the URL for the game this DataConnector is currently connected to.
+	 * @return The URL this DataConnector is connected to.
+	 */
+	public String getBrowserURL() {
+		if (getServerToken() == null) {
+			throw new IllegalStateException("Server token required, but not set");
+		}
+		String fullURL = createFullURL("", true, true, false, false, false);
+		fullURL += (fullURL.contains("?") ? "&" : "?") + URL_SEGMENT_SERVER_TOKEN_PARAMETER
+				+ getServerToken();
+		return fullURL;
+	}
+
+	/**
 	 * Indicates whether checks for missing credentials and such should be performed when performing certain
 	 * complex operations.
 	 * @return True when checks are being skipped. False when checks will be performed.
@@ -340,6 +356,9 @@ public class ExtendedDataConnector extends DataConnector {
 
 		sendDataToServerSession(BUILDING_PLAN_CONSTRUCTION_EVENT, Integer.toString(stakeholderID),
 				Integer.toString(functionID), Integer.toString(floors), location);
+	}
+
+	public void saveGame() {
 	}
 
 	/**
