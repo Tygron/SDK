@@ -59,7 +59,7 @@ public class UpdateMonitor {
 
 	/**
 	 * Register a listener, which will be informed of updates when they occur while listening.
-	 *
+	 * 
 	 * @param listener The Listener to add.
 	 */
 	public void addListener(UpdateListenerInterface listener) {
@@ -141,7 +141,7 @@ public class UpdateMonitor {
 
 	/**
 	 * Is the UpdateMonitor currently listening?
-	 *
+	 * 
 	 * @return Whether the UpdateMonitor is currently listening.
 	 */
 	public boolean isListening() {
@@ -150,7 +150,7 @@ public class UpdateMonitor {
 
 	/**
 	 * Whether this UpdateMonitor is storing the data it received.
-	 *
+	 * 
 	 * @return True is this UpdateMonitor is storing data, false otherwise.
 	 */
 	public boolean isStoringData() {
@@ -162,7 +162,7 @@ public class UpdateMonitor {
 	 * listeners. Note that using this function will listen for ALL MapLinks known to this UpdateMonitor,
 	 * which may take up to multple seconds to process. To listen more specifically, use
 	 * listenForUpdates(Collection&lt;String&gt; mapLinksToListenTo).
-	 *
+	 * 
 	 * @throws IllegalStateException When this UpdateMonitor is already listening for updates, the second
 	 *             attempt at listening is ignored, and this exception is thrown.
 	 * @throws NullPointerException When no DataConnector is registered, the attempt at listening is ignored,
@@ -177,7 +177,7 @@ public class UpdateMonitor {
 	/**
 	 * Use the registered DataConnector to listen to updates and, when an update takes place, inform the
 	 * listeners.
-	 *
+	 * 
 	 * @param mapLinksToListenTo A Collection indicating which MapLinks to listen for.
 	 * @throws IllegalStateException When this UpdateMonitor is already listening for updates, the second
 	 *             attempt at listening is ignored, and this exception is thrown.
@@ -264,21 +264,21 @@ public class UpdateMonitor {
 	 * UpdateMonitor is set to store data, the data is stored as well. When completed, a new map is returned
 	 * containing a map per mapLink of item (MapLink), wherein the submap contains each item indexed by its
 	 * id.
-	 *
+	 * 
 	 * @param map The map to process, as returned by the API's update function.
 	 * @param delete When storing data, whether to delete the data or just store it. This is ignored if
-	 * @return
+	 * @return The cleaned map with MapLinks as keys, and Maps as values. The submaps are Maps of items,
+	 *         indexed by id.
 	 */
-	private Map<String, Map<Integer, Map>> processData(Map<Object, Object> map, boolean delete) {
+	public Map<String, Map<Integer, Map>> processData(Map<Object, Object> map, boolean delete) {
 		// The map we return should enforce some amount of type safety. For this
-		// reason is it typed, and items
+		// reason it is typed, and items
 		// are only added to it when they are confirmed to conform to the
 		// required types.
 
 		HashMap<String, Map<Integer, Map>> returnable = new HashMap<String, Map<Integer, Map>>();
 
-		// At this time, the returned data structure contains unneccesary
-		// nesting. To make the data easier to
+		// At this time, the returned data structure contains unneccesary nesting. To make the data easier to
 		// use, we collapse it.
 		Map<Object, Object> collapsedData = DataListUtils.collapseMapsInListsInMapsInMap(map);
 
@@ -294,46 +294,73 @@ public class UpdateMonitor {
 				Log.warning("Failed to retrieve Items for a specific MapLinks as List: " + mapLink);
 				continue;
 			}
-			try {
-				List<?> itemList = (List<?>) mapLinkValue;
-				returnable.put(mapLink, new HashMap<Integer, Map>());
-				for (Object itemObject : itemList) {
-					if (!(itemObject instanceof Map<?, ?>)) {
-						Log.warning("Failed to read Item as Map: " + itemObject.toString());
-						continue;
-					}
 
-					Map<?, ?> item = (Map<?, ?>) itemObject;
-					Object itemIdObject = item.get("id");
-					if ((itemIdObject == null) || (!(itemIdObject instanceof Integer))) {
-						Log.warning("Failed to retrieve Item Id from:" + item.toString());
-						continue;
-					}
-					Integer itemId = (Integer) itemIdObject;
+			List<?> itemList = (List<?>) mapLinkValue;
+			HashMap<Integer, Map> itemMap = processData(mapLink, itemList, delete);
 
-					Object itemVersionObject = item.get("version");
-					if ((itemVersionObject == null) || (!(itemVersionObject instanceof Integer))) {
-						Log.warning("Failed to retrieve Item version from:" + mapLink + ": " + itemId);
-						// conntinue; //We may not have a version number, but
-						// the item is otherwise sound, so
-						// we'll store it.
-					} else {
-						Integer itemVersion = (Integer) itemVersionObject;
-						versions.put(mapLink, Math.max(getVersion(mapLink), itemVersion));
-					}
+			returnable.put(mapLink, itemMap);
+		}
 
-					returnable.get(mapLink).put(itemId, item);
-					if (storeData) {
-						storeData(mapLink, itemId, item, delete);
-					}
+		return returnable;
+	}
+
+	/**
+	 * This function receives a List of data, specifically of a single MapLink. The items in the List are
+	 * parsed and placed into a map where they are indexed with their id's as key. If the UpdateMonitor is set
+	 * to store data, the data is stored as well. When completed, a new map is returned containing each item
+	 * indexed by its id.
+	 * 
+	 * @param map The map to process, as returned by the API's update function.
+	 * @param delete When storing data, whether to delete the data or just store it. This is ignored if
+	 * @return A map with items as values, indexed by ids.
+	 */
+	public HashMap<Integer, Map> processData(String mapLink, List<?> itemList, boolean delete) {
+		// The map we return should enforce some amount of type safety. For this
+		// reason is it typed, and items
+		// are only added to it when they are confirmed to conform to the
+		// required types.
+
+		HashMap<Integer, Map> returnable = new HashMap<Integer, Map>();
+
+		List<Object> collapsedData = DataListUtils.collapseMapsInList(itemList);
+
+		try {
+			for (Object itemObject : collapsedData) {
+				if (!(itemObject instanceof Map<?, ?>)) {
+					Log.warning("Failed to read Item as Map: " + itemObject.toString());
+					continue;
 				}
-			} catch (ClassCastException e) {
-				Log.exception(e, "Failed to read part of the updated data.");
-			} catch (NullPointerException e) {
-				Log.exception(e, "Encountered Null as part of updated data.");
-			} catch (Exception e) {
-				Log.exception(e, "An unexpected condition occured while parsing updated data.");
+
+				Map<?, ?> item = (Map<?, ?>) itemObject;
+				Object itemIdObject = item.get("id");
+				if ((itemIdObject == null) || (!(itemIdObject instanceof Integer))) {
+					Log.warning("Failed to retrieve Item Id from:" + item.toString());
+					continue;
+				}
+				Integer itemId = (Integer) itemIdObject;
+
+				Object itemVersionObject = item.get("version");
+				if ((itemVersionObject == null) || (!(itemVersionObject instanceof Integer))) {
+					Log.warning("Failed to retrieve Item version from:" + mapLink + ": " + itemId);
+					// continue; //We may not have a version number, but
+					// the item is otherwise sound, so
+					// we'll store it.
+				} else {
+					Integer itemVersion = (Integer) itemVersionObject;
+					versions.put(mapLink, Math.max(getVersion(mapLink), itemVersion));
+				}
+
+				returnable.put(itemId, item);
+				if (storeData) {
+					storeData(mapLink, itemId, item, delete);
+				}
 			}
+		} catch (ClassCastException e) {
+			Log.exception(e, "Failed to read part of the updated data.");
+		} catch (NullPointerException e) {
+			Log.exception(e, "Encountered Null as part of updated data.");
+		} catch (Exception e) {
+			Log.exception(e, "An unexpected condition occured while parsing updated data.");
 		}
 
 		return returnable;
@@ -342,8 +369,10 @@ public class UpdateMonitor {
 	private void processDataAndAlertListeners(String JSon) {
 		UpdateReceiverObject received = JsonUtils.mapJsonToType(JSon, UpdateReceiverObject.class);
 
-		Map<String, Map<Integer, Map>> items = processData(received.items, false);
-		Map<String, Map<Integer, Map>> deletes = processData(received.deletes, true);
+		Map<String, Map<Integer, Map>> items = processData(
+				DataListUtils.collapseMapsInListsInMapsInMap(received.items), false);
+		Map<String, Map<Integer, Map>> deletes = processData(
+				DataListUtils.collapseMapsInListsInMapsInMap(received.deletes), true);
 
 		alertListeners(items, deletes);
 
@@ -351,7 +380,7 @@ public class UpdateMonitor {
 
 	/**
 	 * Remove a registered listener. The listener will no longer be informed of updates.
-	 *
+	 * 
 	 * @param listener The listener to remove.
 	 */
 	public void removeListener(UpdateListenerInterface listener) {
@@ -379,7 +408,7 @@ public class UpdateMonitor {
 
 	/**
 	 * Set the dataconnector to use to listen to updates.
-	 *
+	 * 
 	 * @param dataConnector
 	 */
 	public void setDataConnector(DataConnector dataConnector) {
@@ -388,7 +417,7 @@ public class UpdateMonitor {
 
 	/**
 	 * Set whether this UpdateMonitor should store data when it is received.
-	 *
+	 * 
 	 * @param storeData Whether to store data.
 	 */
 	public void setStoringData(boolean storeData) {

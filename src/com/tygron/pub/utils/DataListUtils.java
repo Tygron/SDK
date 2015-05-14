@@ -12,7 +12,7 @@ import java.util.Map.Entry;
  * ItemMaps which are structurally redundant (e.g. maps with always only one key and another map as its
  * value).
  * @author Rudolf
- *
+ * 
  */
 public class DataListUtils {
 
@@ -21,7 +21,7 @@ public class DataListUtils {
 	 * @param list The list to collapse.
 	 * @return The collapsed list.
 	 */
-	public static List<Object> collapseMapsInList(List<Object> list) {
+	public static List<Object> collapseMapsInList(List<? extends Object> list) {
 		if (list == null) {
 			return null;
 		}
