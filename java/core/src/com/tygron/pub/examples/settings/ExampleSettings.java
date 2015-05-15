@@ -1,6 +1,6 @@
 package com.tygron.pub.examples.settings;
 
-import java.io.InputStream;
+import java.io.FileInputStream;
 import java.util.Properties;
 
 /**
@@ -31,7 +31,7 @@ public class ExampleSettings {
 			try {
 
 				Properties prop = new Properties();
-				InputStream in = ExampleSettings.class.getResourceAsStream("authentication.properties");
+				FileInputStream in = new FileInputStream("./authentication.properties");
 				prop.load(in);
 				in.close();
 
