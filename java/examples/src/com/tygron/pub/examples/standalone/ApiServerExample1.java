@@ -27,7 +27,7 @@ import com.tygron.pub.examples.standalone.apiserver.ExampleServerConfig1;
  *
  * See ExampleServerConfig1's runModel function for more insight into how this example works.
  *
- * @author Rudolf
+ * @author Maxim
  *
  */
 
