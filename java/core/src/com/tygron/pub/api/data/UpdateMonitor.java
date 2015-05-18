@@ -16,6 +16,32 @@ import com.tygron.pub.utils.DataUtils;
 import com.tygron.pub.utils.JsonUtils;
 import com.tygron.pub.utils.StringUtils;
 
+/**
+ * This class serves as a mechanism to listen to a session. Whenever new data presents itself, it is
+ * immediately processed so that it can be easily accessed, saved if desired, and sent to any parts of the
+ * application that have subscribed to it.
+ *
+ * By default, all data retrieved is automatically stored in a DataMonitor, created when the UpdateMonitor is
+ * instantiated. If desirable you can overwrite the DataMonitor with your own implementation. It is possible
+ * to set the UpdateMonitor to skip storing data. A DataMonitor will still be required to store the most
+ * recent version of the data listened to so far.
+ *
+ * This mechanism relies on a DataConnector to connect to the server. To set up the UpdateMonitor and start
+ * listening to updates, you can do the following:
+ *
+ * <pre>
+ * UpdateMonitor monitor = new UpdateMonitor();
+ * monitor.setDataConnector(yourDataConnector);
+ * monitor.addListener(yourUpdateListenerImplementation);
+ * new Thread(new Runnable() {
+ * 	public void run() {
+ * 		monitor.startListening();
+ * 	}
+ * }).start();
+ * </pre>
+ * @author Rudolf
+ *
+ */
 public class UpdateMonitor {
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
@@ -50,7 +76,8 @@ public class UpdateMonitor {
 	}
 
 	/**
-	 * Register a listener, which will be informed of updates when they occur while listening.
+	 * Register a listener, which will be informed of updates when they occur while listening. This listener
+	 * will automatically listen to all updates.
 	 *
 	 * @param listener The Listener to add.
 	 */
@@ -60,6 +87,13 @@ public class UpdateMonitor {
 		}
 	}
 
+	/**
+	 * Register a listener, which will be informed of updates of the specified mapLink when they occur while
+	 * listening.
+	 *
+	 * @param listener The Listener to add.
+	 * @param mapLinkToListenTo The type of data to listen to.
+	 */
 	public void addListener(UpdateListenerInterface listener, String mapLinkToListenTo) {
 		if (listener == null || mapLinkToListenTo == null || StringUtils.EMPTY.equals(mapLinkToListenTo)) {
 			return;
@@ -76,12 +110,26 @@ public class UpdateMonitor {
 
 	}
 
+	/**
+	 * Register a listener, which will be informed of updates of the specified mapLinks when they occur while
+	 * listening.
+	 *
+	 * @param listener The Listener to add.
+	 * @param mapLinkToListenTo The types of data to listen to.
+	 */
 	public void addListener(UpdateListenerInterface listener, String... mapLinksToListenTo) {
 		for (String mapLink : mapLinksToListenTo) {
 			addListener(listener, mapLink);
 		}
 	}
 
+	/**
+	 * Register listeners, which will be informed of updates of the specified mapLink when they occur while
+	 * listening.
+	 *
+	 * @param mapLinkToListenTo The type of data to listen to.
+	 * @param listeners The Listeners to add.
+	 */
 	public void addListeners(String mapLinkToListenTo, UpdateListenerInterface... listeners) {
 		for (UpdateListenerInterface listener : listeners) {
 			addListener(listener, mapLinkToListenTo);
@@ -99,11 +147,23 @@ public class UpdateMonitor {
 		}
 	}
 
+	/**
+	 * Remove all listeners from the UpdateMonitor. The Listeners are not informed of this.
+	 */
 	public void clearAllListeners() {
 		this.specificListeners = new HashMap<UpdateListenerInterface, List<String>>();
 		this.generalListeners = new LinkedList<UpdateListenerInterface>();
 	}
 
+	/**
+	 * Create a new mapping, which only contains ItemMaps of the MapLinks specified. This function is
+	 * non-destructive; the original map is unchanged. However, changes in the ItemMaps in the returned map
+	 * are reflected in the original map and vice-versa.
+	 * @param map A map of ItemMaps, from which appropriate data should be retrieved.
+	 * @param mapLinks The MapLinks to carry over from the provided map to the returned map.
+	 * @return A map containing a subset of the provided map. Effectively the intersection between the
+	 *         provided maps and the maplinks.
+	 */
 	public Map<String, Map<Integer, Map<?, ?>>> filterDataForListener(
 			final Map<String, Map<Integer, Map<?, ?>>> map, final List<String> mapLinks) {
 		Map<String, Map<Integer, Map<?, ?>>> returnable = new HashMap<String, Map<Integer, Map<?, ?>>>();
@@ -135,7 +195,7 @@ public class UpdateMonitor {
 	}
 
 	/**
-	 * Is the UpdateMonitor currently listening?
+	 * Whether the UpdateMonitor is currently listening.
 	 *
 	 * @return Whether the UpdateMonitor is currently listening.
 	 */
@@ -152,6 +212,107 @@ public class UpdateMonitor {
 		return this.storeData;
 	}
 
+	private void processDataAndAlertListeners(String JSon) {
+		UpdateReceiverObject received = JsonUtils.mapJsonToType(JSon, UpdateReceiverObject.class);
+
+		Map<String, Map<Integer, Map<?, ?>>> items = DataUtils.collapseUpdateMap(received.items);
+		Map<String, Map<Integer, Map<?, ?>>> deletes = DataUtils.collapseUpdateMap(received.deletes);
+
+		if (storeData) {
+			dataMonitor.storeData(items, false);
+			dataMonitor.storeData(deletes, true);
+		} else {
+			dataMonitor.storeVersions(items);
+			dataMonitor.storeVersions(deletes);
+		}
+
+		alertListeners(items, deletes);
+
+	}
+
+	/**
+	 * Remove a registered listener set to listen to all updates. The listener will no longer be informed of
+	 * updates. If the listener is also listening to any MapLinks specifically, this listener will continue to
+	 * listen to those specific MapLinks.
+	 *
+	 * @param listener The listener to remove.
+	 */
+	public void removeListener(UpdateListenerInterface listener) {
+		if (generalListeners.contains(listener)) {
+			generalListeners.remove(listener);
+		}
+	}
+
+	/**
+	 * Stop this listener from listening to the specified MapLink. If this is the last MapLink the listener
+	 * was listening to, the listener will no longer be listening for specific MapLinks. If the listener is
+	 * also listening to all MapLinks, it will continue to be informed of all updates.
+	 * @param listener The listener to remove.
+	 * @param mapLink The MapLink which this listener needn't listen to anymore.
+	 */
+	public void removeListener(UpdateListenerInterface listener, String mapLink) {
+		if (listener == null || mapLink == null || StringUtils.EMPTY.equals(mapLink)) {
+			return;
+		}
+
+		List<String> mapLinks = specificListeners.get(listener);
+		if (mapLinks == null) {
+			return;
+		}
+		if (mapLinks.contains(mapLink)) {
+			mapLinks.remove(mapLink);
+		}
+		if (mapLinks.size() == 0) {
+			specificListeners.remove(listener);
+		}
+	}
+
+	/**
+	 * Set the dataconnector to use to listen to updates.
+	 *
+	 * @param dataConnector The DataConnector to use.
+	 */
+	public void setDataConnector(DataConnector dataConnector) {
+		this.dataConnector = dataConnector;
+	}
+
+	/**
+	 * Set the DataMonitor to store data and version information.
+	 * @param DataMonitor The DataMonitor to use.
+	 */
+	public void setDataMonitor(DataMonitor dataMonitor) {
+		if (dataMonitor == null) {
+			return;
+		}
+		this.dataMonitor = dataMonitor;
+	}
+
+	/**
+	 * Set the maps which the UpdateMonitor should listen for explicitly. If this method is called while the
+	 * UpdateMonitor is listening, it will complete its current request as if no change has taken place. When
+	 * creating a new request, it will use only the MapLinks of the newly provided collection to create its
+	 * request.
+	 *
+	 * @param mapLinksToListenTo The MapLinks to which the updateMonitor should listen.
+	 */
+	public void setMapLinksToListenTo(Collection<String> mapLinksToListenTo) {
+		synchronized (this.mapLinksToListenTo) {
+			this.mapLinksToListenTo.clear();
+			if (mapLinksToListenTo != null) {
+				this.mapLinksToListenTo.addAll(mapLinksToListenTo);
+			}
+		}
+	}
+
+	/**
+	 * Set whether this UpdateMonitor should store data when it is received.
+	 *
+	 * @param storeData Whether to store data.
+	 */
+	public void setStoringData(boolean storeData) {
+		this.storeData = storeData;
+	}
+
 	/**
 	 * Use the registered DataConnector to listen to updates and, when an update takes place, inform the
 	 * listeners. Note that using this function will listen for ALL MapLinks known to this UpdateMonitor,
@@ -165,8 +326,8 @@ public class UpdateMonitor {
 	 * @throws HTTPException If the status code of the HTTP request is not 200, 204 or 400, this exception is
 	 *             thrown and listening is halted.
 	 */
-	public void listenForUpdates() throws IllegalStateException, NullPointerException, HTTPException {
-		listenForUpdates(mapLinksToListenTo);
+	public void startListening() throws IllegalStateException, NullPointerException, HTTPException {
+		startListening(mapLinksToListenTo);
 	}
 
 	/**
@@ -182,7 +343,7 @@ public class UpdateMonitor {
 	 * @throws HTTPException If the status code of the HTTP request is not 200, 204 or 400, this exception is
 	 *             thrown and listening is halted.
 	 */
-	public void listenForUpdates(final Collection<String> mapLinksToListenTo) throws IllegalStateException,
+	public void startListening(final Collection<String> mapLinksToListenTo) throws IllegalStateException,
 			NullPointerException, HTTPException {
 		synchronized (this) {
 			if (listening) {
@@ -252,98 +413,6 @@ public class UpdateMonitor {
 		}
 		listening = false;
 		stopListening = false;
-	}
-
-	private void processDataAndAlertListeners(String JSon) {
-		UpdateReceiverObject received = JsonUtils.mapJsonToType(JSon, UpdateReceiverObject.class);
-
-		Map<String, Map<Integer, Map<?, ?>>> items = DataUtils.collapseUpdateMap(received.items);
-		Map<String, Map<Integer, Map<?, ?>>> deletes = DataUtils.collapseUpdateMap(received.deletes);
-
-		if (storeData) {
-			dataMonitor.storeData(items, false);
-			dataMonitor.storeData(deletes, true);
-		} else {
-			dataMonitor.storeVersions(items);
-			dataMonitor.storeVersions(deletes);
-		}
-
-		alertListeners(items, deletes);
-
-	}
-
-	/**
-	 * Remove a registered listener. The listener will no longer be informed of updates.
-	 *
-	 * @param listener The listener to remove.
-	 */
-	public void removeListener(UpdateListenerInterface listener) {
-		if (generalListeners.contains(listener)) {
-			generalListeners.remove(listener);
-		}
-	}
-
-	public void removeListener(UpdateListenerInterface listener, String mapLink) {
-		if (listener == null || mapLink == null || StringUtils.EMPTY.equals(mapLink)) {
-			return;
-		}
-
-		List<String> mapLinks = specificListeners.get(listener);
-		if (mapLinks == null) {
-			return;
-		}
-		if (mapLinks.contains(mapLink)) {
-			mapLinks.remove(mapLink);
-		}
-		if (mapLinks.size() == 0) {
-			specificListeners.remove(listener);
-		}
-	}
-
-	/**
-	 * Set the dataconnector to use to listen to updates.
-	 *
-	 * @param dataConnector
-	 */
-	public void setDataConnector(DataConnector dataConnector) {
-		this.dataConnector = dataConnector;
-	}
-
-	/**
-	 * Set the DataMonitor to store data and version information.
-	 * @param DataMonitor The DataMonitor to use.
-	 */
-	public void setDataMonitor(DataMonitor dataMonitor) {
-		if (dataMonitor == null) {
-			return;
-		}
-		this.dataMonitor = dataMonitor;
-	}
-
-	/**
-	 * Set the maps which the UpdateMonitor should listen for explicitly. If this method is called while the
-	 * UpdateMonitor is listening, it will complete its current request as if no change has taken place. When
-	 * creating a new request, it will use only the MapLinks of the newly provided collection to create its
-	 * request.
-	 *
-	 * @param mapLinksToListenTo The MapLinks to which the updateMonitor should listen.
-	 */
-	public void setMapLinksToListenTo(Collection<String> mapLinksToListenTo) {
-		synchronized (this.mapLinksToListenTo) {
-			this.mapLinksToListenTo.clear();
-			if (mapLinksToListenTo != null) {
-				this.mapLinksToListenTo.addAll(mapLinksToListenTo);
-			}
-		}
-	}
-
-	/**
-	 * Set whether this UpdateMonitor should store data when it is received.
-	 *
-	 * @param storeData Whether to store data.
-	 */
-	public void setStoringData(boolean storeData) {
-		this.storeData = storeData;
 	}
 
 	/**

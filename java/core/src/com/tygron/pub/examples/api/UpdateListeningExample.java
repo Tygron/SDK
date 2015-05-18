@@ -179,7 +179,7 @@ public class UpdateListeningExample {
 			@Override
 			public void run() {
 				try {
-					updateMonitor.listenForUpdates(Arrays.asList("POPUPS"));
+					updateMonitor.startListening(Arrays.asList("POPUPS"));
 				} catch (Exception e) {
 					// When the updatemonitor is suddenly facing a closed session, an expection will likely
 					// occur. This can be prevented by invoking "stopListening()" before the session is
