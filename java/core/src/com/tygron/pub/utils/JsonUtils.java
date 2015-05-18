@@ -47,7 +47,7 @@ public class JsonUtils {
 		}
 	}
 
-	public static List<Object> mapJsonToList(final String json) {
+	public static List<?> mapJsonToList(final String json) {
 		if (json == null || StringUtils.EMPTY.equals(json)) {
 			return null;
 		}
@@ -59,7 +59,7 @@ public class JsonUtils {
 		}
 	}
 
-	public static Map<Object, Object> mapJsonToMap(final String json) {
+	public static Map<?, ?> mapJsonToMap(final String json) {
 		if (json == null || StringUtils.EMPTY.equals(json)) {
 			return null;
 		}

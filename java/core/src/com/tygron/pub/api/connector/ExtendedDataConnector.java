@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.tygron.pub.api.enums.ClientType;
 import com.tygron.pub.api.enums.GameMode;
 import com.tygron.pub.logger.Log;
-import com.tygron.pub.utils.DataListUtils;
+import com.tygron.pub.utils.DataUtils;
 import com.tygron.pub.utils.JsonUtils;
 import com.tygron.pub.utils.ValueUtils;
 
@@ -169,7 +169,7 @@ public class ExtendedDataConnector extends DataConnector {
 			barsFailed = 0;
 			data = getDataFromServerSession(DATA_PROGRESS);
 
-			List<Object> progressList = DataListUtils.collapseMapsInList(JsonUtils.mapJsonToList(data
+			List<Object> progressList = DataUtils.collapseMapsInList(JsonUtils.mapJsonToList(data
 					.getContent()));
 			barsTotal = progressList.size();
 			for (Object progressBar : progressList) {

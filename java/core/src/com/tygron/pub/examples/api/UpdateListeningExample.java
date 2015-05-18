@@ -18,6 +18,19 @@ import com.tygron.pub.api.listeners.UpdateListenerInterface;
 import com.tygron.pub.examples.settings.ExampleGame;
 import com.tygron.pub.examples.settings.ExampleSettings;
 
+/**
+ * This api-based example performs all necessary steps to connect to a game. It then opens another connection,
+ * where it will select the municipality as stakeholder. The municipality will listen for new permit requests,
+ * and automatically approve them.
+ *
+ * This example will show a popup. When the popup is closed, the session will be closed. To observe the
+ * effects of this example, it is recommended to join the session as the SSH, and construct student housings.
+ *
+ * It is important to note that starting a session takes a while to complete, thus the thread blocks for up to
+ * 20 seconds.
+ * @author Rudolf
+ *
+ */
 public class UpdateListeningExample {
 	public static void main(String[] args) {
 
@@ -96,11 +109,12 @@ public class UpdateListeningExample {
 			List<Integer> answeredPopups = new LinkedList<Integer>();
 
 			@Override
-			public void update(Map<String, Map<Integer, Map>> items, Map<String, Map<Integer, Map>> deletes) {
+			public void update(Map<String, Map<Integer, Map<?, ?>>> items,
+					Map<String, Map<Integer, Map<?, ?>>> deletes) {
 				// If popups have been received, we can iterate through them
-				Map<Integer, Map> popups = items.get("POPUPS");
+				Map<Integer, Map<?, ?>> popups = items.get("POPUPS");
 				if (popups != null) {
-					for (Entry<Integer, Map> popup : popups.entrySet()) {
+					for (Entry<Integer, Map<?, ?>> popup : popups.entrySet()) {
 						try {
 							// For each popup, check if it's for us, and if we can answer it with "yes".
 							Integer popupID = popup.getKey();
