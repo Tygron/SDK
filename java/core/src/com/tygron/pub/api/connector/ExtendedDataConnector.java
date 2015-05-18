@@ -25,12 +25,6 @@ public class ExtendedDataConnector extends DataConnector {
 	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
-	private static class DataProgressObject {
-		private double progress;
-		private boolean failed;
-	}
-
-	@JsonIgnoreProperties(ignoreUnknown = true)
 	private static class JoinSessionObject {
 		private String serverToken;
 		private ClientObject client;
@@ -54,6 +48,7 @@ public class ExtendedDataConnector extends DataConnector {
 	public static final String BUILDING_PLAN_CONSTRUCTION_EVENT = "PlayerEventType/BUILDING_PLAN_CONSTRUCTION/";
 
 	public static final String DATA_PROGRESS = "progress/";
+	public static final String DATA_MAP_SIZE = "settings/36";
 
 	private final static String URL_SEGMENT_SERVER_TOKEN_PARAMETER = "token=";
 
@@ -99,7 +94,7 @@ public class ExtendedDataConnector extends DataConnector {
 	}
 
 	/**
-	 * Start a session on the server, and connect to it.
+	 * Start a session on the server, and join it.
 	 * @param serverAddress The address for the server.
 	 * @param username The username to use to authenticate.
 	 * @param password The password to use to authenticate.
@@ -169,18 +164,22 @@ public class ExtendedDataConnector extends DataConnector {
 			barsFailed = 0;
 			data = getDataFromServerSession(DATA_PROGRESS);
 
-			List<Object> progressList = DataUtils.collapseMapsInList(JsonUtils.mapJsonToList(data
-					.getContent()));
-			barsTotal = progressList.size();
-			for (Object progressBar : progressList) {
+			Map<Integer, Map<?, ?>> progressMap;
+			try {
+				progressMap = DataUtils.dataListToMap((List<Map<String, Map<?, ?>>>) (JsonUtils
+						.mapJsonToList(data.getContent())));
+			} catch (ClassCastException e) {
+				throw new ClassCastException(
+						"Failed to properly parse progress for the geographical generation process.");
+			}
+			barsTotal = progressMap.size();
+			for (Map<?, ?> progressBar : progressMap.values()) {
 				if (!(progressBar instanceof Map)) {
-					throw new ClassCastException(
-							"Failed to properly parse progress for the geographical generation process.");
 				}
-				if (((Map) progressBar).get("progress").equals(1.0)) {
+				if (progressBar.get("progress").equals(1.0)) {
 					barsComplete++;
 				}
-				if (((Map) progressBar).get("failed").equals(TRUE)) {
+				if (progressBar.get("failed").equals(TRUE)) {
 					barsFailed++;
 				}
 			}
@@ -196,9 +195,10 @@ public class ExtendedDataConnector extends DataConnector {
 	/**
 	 * Set the size of the map.
 	 * @param mapSize Desired width and height of the map in meters.
-	 * @throws IllegalStateException If the map size is either 0 or smaller, or too large.
+	 * @throws IllegalArgumentException If the map size is either 0 or smaller, or too large.
+	 * @throws IllegalStateException If the map is already assigned a size.
 	 */
-	public void generateMapSize(int mapSize) throws IllegalArgumentException {
+	public void generateMapSize(int mapSize) throws IllegalArgumentException, IllegalStateException {
 		parameterCheckDetails(true, true, true);
 
 		if (mapSize < ValueUtils.MIN_MAP_SIZE || mapSize > ValueUtils.MAX_MAP_SIZE) {
@@ -206,7 +206,15 @@ public class ExtendedDataConnector extends DataConnector {
 					+ " and " + ValueUtils.MAX_MAP_SIZE);
 		}
 
-		// SETTINGS_TILEMAP_WIDTH_ORDINAL = 35, but not sure if that updates(yet)
+		if (!getIgnoreChecks()) {
+			DataPackage data = getDataFromServerSession(DATA_MAP_SIZE);
+			Map<String, String> mapSizeSetting = (Map<String, String>) JsonUtils.mapJsonToMap(data
+					.getContent());
+			if (!mapSizeSetting.get("value").equals("0")) {
+				throw new IllegalStateException("Map has already been sized to: "
+						+ mapSizeSetting.get("value"));
+			}
+		}
 		DataPackage data = sendDataToServerSession(SET_MAP_SIZE_EVENT, Integer.toString(mapSize));
 	}
 
@@ -233,9 +241,25 @@ public class ExtendedDataConnector extends DataConnector {
 		return ignoreChecks;
 	}
 
+	/**
+	 * Join a session on the server.
+	 * @param serverAddress The address for the server.
+	 * @param username The username to use to authenticate.
+	 * @param password The password to use to authenticate.
+	 * @param serverSlot The serverslot currently containing the game you wish to join.
+	 * @param clientType The type of client as which to connect to the game. This should match a ClientType
+	 *            enum's String representation.
+	 * @param clientAddress The IP-address of your client.
+	 * @param clientName The name of your client
+	 *
+	 * @return The name of the newly created project (which may differ from the provided gameName). Failure
+	 *         conditions cause exceptions.
+	 * @throws UnexpectedException When the server responds in an unexpected fashion, this exception is
+	 *             immediately thrown.
+	 */
 	public boolean joinSession(final String serverAddress, final String username, final String password,
 			final String clientType, final String serverSlot, final String clientAddress,
-			final String clientName) throws NullPointerException, UnexpectedException {
+			final String clientName) throws UnexpectedException {
 		parameterCheckCredentials(true, serverAddress, true, username, password, serverSlot, clientAddress,
 				clientName);
 
@@ -356,9 +380,6 @@ public class ExtendedDataConnector extends DataConnector {
 
 		sendDataToServerSession(BUILDING_PLAN_CONSTRUCTION_EVENT, Integer.toString(stakeholderID),
 				Integer.toString(functionID), Integer.toString(floors), location);
-	}
-
-	public void saveGame() {
 	}
 
 	/**

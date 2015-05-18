@@ -157,7 +157,7 @@ public class DataUtils {
 	 *         Integer is an itemID and the niclosed map represent a single item of data.
 	 */
 
-	public static Map<Integer, Map<?, ?>> DataListToMap(List<Map<String, Map<?, ?>>> list) {
+	public static Map<Integer, Map<?, ?>> dataListToMap(List<Map<String, Map<?, ?>>> list) {
 		if (list == null) {
 			return null;
 		}
