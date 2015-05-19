@@ -73,7 +73,7 @@ public class PlanActionsExample {
 		System.out.println("Amount of buildings in game: " + receivedString);
 
 		// plan a construction on a self-owned location
-		dataConnector.planBuilding(ExampleGame.STAKEHOLDER, ExampleGame.BUILDING1.FUNCTION,
+		dataConnector.buildingPlanConstruction(ExampleGame.STAKEHOLDER, ExampleGame.BUILDING1.FUNCTION,
 				ExampleGame.BUILDING1.FLOORS, ExampleGame.STAKEHOLDER_OWNED_LOCATIONS[0]);
 
 		// Retrieve the size of the list of buildings, and check it against the value retrieved earlier.

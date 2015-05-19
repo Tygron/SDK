@@ -1,32 +1,42 @@
 package com.tygron.pub.api.enums;
 
 import java.util.Arrays;
+import com.tygron.pub.utils.StringUtils;
 
 public enum MapLink {
 		ACHIEVEMENTS,
 		ACTION_MENUS,
 		ASSISTANT_ACTOR_DATA,
-		LOANS,
 		BEHAVIOR_TERRAINS,
 		BUILDINGS,
 		CHAIN_ELEMENTS,
+		CHAT_MESSAGES(
+			true),
 		CINEMATIC_DATAS,
 		CLIENT_EVENTS,
 		CLIENT_WORDS,
 		CONTRIBUTORS,
 		COSTS,
+		DEFAULT_WORDS(
+			true),
 		DIKES,
 		ECONOMIES,
+		EDITING_SESSION(
+			true),
 		EVENT_BUNDLES,
 		FUNCTIONS,
 		FUNCTION_OVERRIDES,
 		GAME_LEVELS,
+		GEO_LINKS(
+			true),
 		HEIGHTS,
 		HOTSPOTS,
 		INCOMES,
 		INDICATORS,
 		KEY_BINDINGS,
 		LANDS,
+		LOANS,
+		LOGS,
 		MEASURES,
 		MESSAGES,
 		MODEL_DATAS,
@@ -34,8 +44,8 @@ public enum MapLink {
 		MONEY_TRANSFERS,
 		OVERLAYS,
 		PARTICLE_EMITTERS,
-		PIPE_CLUSTERS,
 		PIPES,
+		PIPE_CLUSTERS,
 		PIPE_DEFINITIONS,
 		PIPE_JUNCTIONS,
 		PIPE_LOADS,
@@ -43,10 +53,11 @@ public enum MapLink {
 		POPUPS,
 		PRODUCTS,
 		PRODUCT_STORAGES,
+		PROGRESS(
+			true),
 		QUALITATIVE_FUNCTION_SCORES,
 		SCORES,
 		SERVER_WORDS,
-		LOGS,
 		SETTINGS,
 		SHRINK_SETTINGS,
 		SIMTIME_SETTINGS,
@@ -81,5 +92,31 @@ public enum MapLink {
 
 	public static String[] stringValues() {
 		return Arrays.copyOf(stringValues, stringValues.length);
+	}
+
+	boolean editorData = false;
+
+	private MapLink() {
+	}
+
+	private MapLink(boolean editorData) {
+		this.editorData = editorData;
+	}
+
+	public boolean isEditorEvent() {
+		return editorData;
+	}
+
+	public String itemUrl(int itemNumber) {
+		return this.url() + itemNumber;
+	}
+
+	@Override
+	public String toString() {
+		return this.name().replace("_", "").toLowerCase();
+	}
+
+	public String url() {
+		return this.toString() + StringUtils.URL_DELIMITER;
 	}
 }

@@ -6,9 +6,13 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.tygron.pub.api.enums.ClientType;
 import com.tygron.pub.api.enums.GameMode;
+import com.tygron.pub.api.enums.MapLink;
+import com.tygron.pub.api.enums.events.ServerEvent;
+import com.tygron.pub.api.enums.events.SessionEvent;
 import com.tygron.pub.logger.Log;
 import com.tygron.pub.utils.DataUtils;
 import com.tygron.pub.utils.JsonUtils;
+import com.tygron.pub.utils.StringUtils;
 import com.tygron.pub.utils.ValueUtils;
 
 public class ExtendedDataConnector extends DataConnector {
@@ -29,26 +33,6 @@ public class ExtendedDataConnector extends DataConnector {
 		private String serverToken;
 		private ClientObject client;
 	}
-
-	public static final String TRUE = Boolean.TRUE.toString();
-	public static final String FALSE = Boolean.FALSE.toString();
-	public static final String NULL = "null";
-
-	public static final String CREATE_PROJECT_EVENT = "IOServicesEventType/CREATE_NEW_PROJECT/";
-	public static final String SET_MAP_SIZE_EVENT = "EditorEventType/GENERATE_INITIAL_TILES/";
-	public static final String GENERATE_GAME_EVENT = "ServerGeoEventType/START_WORLD_CREATION/";
-
-	public static final String NEW_SESSION_EVENT = "IOServicesEventType/START_NEW_SESSION/";
-	public static final String JOIN_SESSION_EVENT = "IOServicesEventType/JOIN_SESSION/";
-	public static final String CLOSE_SESSION_EVENT = "IOServicesEventType/CLOSE_SESSION/";
-
-	public static final String STAKEHOLDER_SELECT_EVENT = "PlayerEventType/STAKEHOLDER_SELECT/";
-	public static final String SETTINGS_ALLOW_GAME_INTERACTION_EVENT = "SettingsLogicEventType/SETTINGS_ALLOW_GAME_INTERACTION/";
-
-	public static final String BUILDING_PLAN_CONSTRUCTION_EVENT = "PlayerEventType/BUILDING_PLAN_CONSTRUCTION/";
-
-	public static final String DATA_PROGRESS = "progress/";
-	public static final String DATA_MAP_SIZE = "settings/36";
 
 	private final static String URL_SEGMENT_SERVER_TOKEN_PARAMETER = "token=";
 
@@ -75,7 +59,23 @@ public class ExtendedDataConnector extends DataConnector {
 	 */
 	public void allowGameInteraction(boolean allowInteraction) {
 		parameterCheckDetails(true, true, false);
-		sendDataToServerSession(SETTINGS_ALLOW_GAME_INTERACTION_EVENT, (allowInteraction ? TRUE : FALSE));
+		sendDataToServerSession(SessionEvent.SETTINGS_ALLOW_GAME_INTERACTION.url(),
+				(allowInteraction ? StringUtils.TRUE : StringUtils.FALSE));
+	}
+
+	/**
+	 * Plan the construction of a building.
+	 * @param stakeholderID The enacting stakeholder
+	 * @param functionID The id of the function for the building (the building type)
+	 * @param floors The amount of floors this building should have
+	 * @param location A multipolygon String
+	 */
+	public void buildingPlanConstruction(int stakeholderID, int functionID, int floors, String location) {
+		parameterCheckDetails(true, true, true);
+
+		sendDataToServerSession(SessionEvent.BUILDING_PLAN_CONSTRUCTION.url(),
+				Integer.toString(stakeholderID), Integer.toString(functionID), Integer.toString(floors),
+				location);
 	}
 
 	/**
@@ -89,8 +89,9 @@ public class ExtendedDataConnector extends DataConnector {
 	public boolean closeConnectedSession() {
 		parameterCheckDetails(true, false, true);
 
-		DataPackage data = sendDataToServer(CLOSE_SESSION_EVENT, getServerSlot(), getClientToken(), FALSE);
-		return data.getContent().equals(TRUE);
+		DataPackage data = sendDataToServer(ServerEvent.CLOSE_SESSION.url(), getServerSlot(),
+				getClientToken(), StringUtils.FALSE);
+		return data.isContentTrue();
 	}
 
 	/**
@@ -119,7 +120,7 @@ public class ExtendedDataConnector extends DataConnector {
 
 		String returnableGameName = null;
 
-		DataPackage data = sendDataToServer(CREATE_PROJECT_EVENT, gameName, language);
+		DataPackage data = sendDataToServer(ServerEvent.CREATE_PROJECT.url(), gameName, language);
 
 		try {
 			CreateProjectObject gameData = JsonUtils.mapJsonToType(data.getContent(),
@@ -151,8 +152,8 @@ public class ExtendedDataConnector extends DataConnector {
 
 		generateMapSize(mapSize);
 		Log.verbose("Beginning map generation process: " + locationX + " by " + locationY);
-		DataPackage data = sendDataToServerSession(GENERATE_GAME_EVENT, Double.toString(locationX),
-				Double.toString(locationY));
+		DataPackage data = sendDataToServerSession(SessionEvent.GENERATE_GAME.url(),
+				Double.toString(locationX), Double.toString(locationY));
 
 		int barsTotal;
 		int barsComplete;
@@ -162,7 +163,7 @@ public class ExtendedDataConnector extends DataConnector {
 			barsTotal = 0;
 			barsComplete = 0;
 			barsFailed = 0;
-			data = getDataFromServerSession(DATA_PROGRESS);
+			data = getDataFromServerSession(MapLink.PROGRESS);
 
 			Map<Integer, Map<?, ?>> progressMap;
 			try {
@@ -179,7 +180,7 @@ public class ExtendedDataConnector extends DataConnector {
 				if (progressBar.get("progress").equals(1.0)) {
 					barsComplete++;
 				}
-				if (progressBar.get("failed").equals(TRUE)) {
+				if (progressBar.get("failed").equals(StringUtils.TRUE)) {
 					barsFailed++;
 				}
 			}
@@ -207,7 +208,7 @@ public class ExtendedDataConnector extends DataConnector {
 		}
 
 		if (!getIgnoreChecks()) {
-			DataPackage data = getDataFromServerSession(DATA_MAP_SIZE);
+			DataPackage data = getDataFromServerSession(MapLink.SETTINGS.itemUrl(ValueUtils.SETTING_MAP_SIZE));
 			Map<String, String> mapSizeSetting = (Map<String, String>) JsonUtils.mapJsonToMap(data
 					.getContent());
 			if (!mapSizeSetting.get("value").equals("0")) {
@@ -215,7 +216,7 @@ public class ExtendedDataConnector extends DataConnector {
 						+ mapSizeSetting.get("value"));
 			}
 		}
-		DataPackage data = sendDataToServerSession(SET_MAP_SIZE_EVENT, Integer.toString(mapSize));
+		DataPackage data = sendDataToServerSession(SessionEvent.SET_MAP_SIZE.url(), Integer.toString(mapSize));
 	}
 
 	/**
@@ -280,8 +281,8 @@ public class ExtendedDataConnector extends DataConnector {
 			return false;
 		}
 
-		DataPackage data = sendDataToServer(JOIN_SESSION_EVENT, serverSlot, clientType, clientAddress,
-				clientName, null);
+		DataPackage data = sendDataToServer(ServerEvent.JOIN_SESSION.url(), serverSlot, clientType,
+				clientAddress, clientName, null);
 
 		JoinSessionObject joinObject = JsonUtils.mapJsonToType(data.getContent(), JoinSessionObject.class);
 
@@ -369,20 +370,6 @@ public class ExtendedDataConnector extends DataConnector {
 	}
 
 	/**
-	 * Plan the construction of a building.
-	 * @param stakeholderID The enacting stakeholder
-	 * @param functionID The id of the function for the building (the building type)
-	 * @param floors The amount of floors this building should have
-	 * @param location A multipolygon String
-	 */
-	public void planBuilding(int stakeholderID, int functionID, int floors, String location) {
-		parameterCheckDetails(true, true, true);
-
-		sendDataToServerSession(BUILDING_PLAN_CONSTRUCTION_EVENT, Integer.toString(stakeholderID),
-				Integer.toString(functionID), Integer.toString(floors), location);
-	}
-
-	/**
 	 * Select a stakeholder for use during the session
 	 * @param stakeholderID
 	 * @return True when the stakeholder was selected successfully. False when the stakeholder was already
@@ -394,10 +381,10 @@ public class ExtendedDataConnector extends DataConnector {
 	public boolean selectStakeholder(int stakeholderID) throws IllegalArgumentException {
 		parameterCheckDetails(true, true, true);
 
-		DataPackage data = sendDataToServerSession(STAKEHOLDER_SELECT_EVENT, Integer.toString(stakeholderID),
-				getClientToken());
+		DataPackage data = sendDataToServerSession(SessionEvent.STAKEHOLDER_SELECT.url(),
+				Integer.toString(stakeholderID), getClientToken());
 
-		if (data.getContent().equals(NULL)) {
+		if (data.isContentNull()) {
 			throw new IllegalArgumentException("No stakeholder with ID: " + stakeholderID);
 		} else {
 			return Boolean.valueOf(data.getContent());
@@ -448,7 +435,8 @@ public class ExtendedDataConnector extends DataConnector {
 			setServerAddress(serverAddress);
 		}
 
-		DataPackage data = sendDataToServer(NEW_SESSION_EVENT, gameMode, gameName, language, null, null);
+		DataPackage data = sendDataToServer(ServerEvent.NEW_SESSION.url(), gameMode, gameName, language,
+				null, null);
 		String slot = data.getContent();
 
 		return joinSession(null, null, null, clientType, slot, clientAddress, clientName);

@@ -9,6 +9,9 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
+import com.tygron.pub.api.enums.EventType.ServerEventType;
+import com.tygron.pub.api.enums.EventType.SessionEventType;
+import com.tygron.pub.api.enums.MapLink;
 import com.tygron.pub.logger.Log;
 import com.tygron.pub.utils.JsonUtils;
 import com.tygron.pub.utils.StringUtils;
@@ -33,8 +36,6 @@ public class DataConnector {
 	private final static String URL_SEGMENT_EVENT = "event/";
 	private final static String URL_SEGMENT_SERVICES = "services/";
 	private final static String URL_SEGMENT_UPDATE = "update/";
-
-	private final static String URL_DELIMITER = "/";
 	private final static String URL_SEGMENT_JSON_QUERY_PARAMETER = "f=JSON";
 
 	private String username = null;
@@ -96,7 +97,7 @@ public class DataConnector {
 			// if (serverToken == null) {
 			// throw new IllegalStateException("Server token required, but not set");
 			// }
-			prefix += URL_SEGMENT_SERVERSLOT + serverSlot + URL_DELIMITER;
+			prefix += URL_SEGMENT_SERVERSLOT + serverSlot + StringUtils.URL_DELIMITER;
 		}
 		if (addList) {
 			prefix += URL_SEGMENT_LISTS;
@@ -145,6 +146,13 @@ public class DataConnector {
 	public DataPackage getDataFromServer(String url) {
 		String fullURL = createFullURL(url, true, false, false, true, false);
 		return makeRequestToURL(fullURL, RequestType.GET);
+	}
+
+	/**
+	 * Request data from https://www.tygronengine.com/api/slots/X/lists/[url]
+	 */
+	public DataPackage getDataFromServerSession(MapLink mapLink) {
+		return getDataFromServerSession(mapLink.toString());
 	}
 
 	/**
@@ -238,7 +246,7 @@ public class DataConnector {
 	 * Send POST request to [url], without parameters
 	 */
 	public DataPackage sendData(String url) {
-		return makeRequestToURL(url, RequestType.POST, null);
+		return makeRequestToURL(url, RequestType.POST, (String) null);
 	}
 
 	/**
@@ -251,9 +259,23 @@ public class DataConnector {
 	/**
 	 * Send POST request to https://www.tygronengine.com/api/services/event/[url]
 	 */
+	public DataPackage sendDataToServer(ServerEventType event, String... params) {
+		return sendDataToServer(event.url(), params);
+	}
+
+	/**
+	 * Send POST request to https://www.tygronengine.com/api/services/event/[url]
+	 */
 	public DataPackage sendDataToServer(String url, String... params) {
 		String fullURL = createFullURL(url, true, false, false, true, true);
 		return makeRequestToURL(fullURL, RequestType.POST, params);
+	}
+
+	/**
+	 * Send POST request to https://www.tygronengine.com/api/slots/X/event/[url]
+	 */
+	public DataPackage sendDataToServerSession(SessionEventType event, String... params) {
+		return sendDataToServerSession(event.url(), params);
 	}
 
 	/**
@@ -293,8 +315,8 @@ public class DataConnector {
 		this.serverAddress = serverAddress;
 
 		if (serverAddress != null) {
-			if (!this.serverAddress.endsWith(URL_DELIMITER)) {
-				this.serverAddress += URL_DELIMITER;
+			if (!this.serverAddress.endsWith(StringUtils.URL_DELIMITER)) {
+				this.serverAddress += StringUtils.URL_DELIMITER;
 			}
 			if (!this.serverAddress.endsWith(URL_SEGMENT_API)) {
 				this.serverAddress += URL_SEGMENT_API;

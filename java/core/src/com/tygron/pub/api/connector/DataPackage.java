@@ -1,5 +1,7 @@
 package com.tygron.pub.api.connector;
 
+import com.tygron.pub.utils.StringUtils;
+
 public class DataPackage {
 	private final String content;
 	private final int requestTime;
@@ -21,5 +23,17 @@ public class DataPackage {
 
 	public int getStatusCode() {
 		return this.statusCode;
+	}
+
+	public boolean isContentFalse() {
+		return (this.getContent().equals(StringUtils.FALSE));
+	}
+
+	public boolean isContentNull() {
+		return (this.getContent().equals(StringUtils.NULL));
+	}
+
+	public boolean isContentTrue() {
+		return (this.getContent().equals(StringUtils.TRUE));
 	}
 }
