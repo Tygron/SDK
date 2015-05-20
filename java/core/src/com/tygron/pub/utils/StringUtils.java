@@ -8,4 +8,5 @@ public class StringUtils {
 
 	public static final String URL_DELIMITER = "/";
 	public static final String EMPTY = "";
+	public static final int NOTHING = -1;
 }

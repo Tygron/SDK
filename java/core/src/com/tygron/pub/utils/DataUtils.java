@@ -50,7 +50,7 @@ public class DataUtils {
 							throw new IndexOutOfBoundsException();
 						}
 						for (Map<?, ?> item : thirdChild.values()) {
-							Integer itemID = -1;
+							Integer itemID = StringUtils.NOTHING;
 							try {
 								itemID = (Integer) item.get("id");
 							} catch (NumberFormatException e) {
@@ -94,7 +94,7 @@ public class DataUtils {
 				}
 
 				for (Map<?, ?> item : firstChild.values()) {
-					Integer itemID = -1;
+					Integer itemID = StringUtils.NOTHING;
 					try {
 						itemID = (Integer) item.get("id");
 					} catch (NumberFormatException e) {

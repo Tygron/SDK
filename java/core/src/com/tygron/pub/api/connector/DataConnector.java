@@ -220,8 +220,8 @@ public class DataConnector {
 	public DataPackage makeRequestToURL(String url, RequestType requestType, Object... params) {
 		String receivedString = StringUtils.EMPTY;
 
-		long requestTime = -1;
-		int statusCode = -1;
+		long requestTime = StringUtils.NOTHING;
+		int statusCode = StringUtils.NOTHING;
 
 		requestTime = System.currentTimeMillis();
 		Response response = makeRequest(url, requestType, params);

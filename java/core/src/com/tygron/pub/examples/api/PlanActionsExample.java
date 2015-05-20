@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import com.tygron.pub.api.connector.DataPackage;
 import com.tygron.pub.api.connector.ExtendedDataConnector;
+import com.tygron.pub.api.connector.modules.PlayerModule;
 import com.tygron.pub.api.enums.ClientType;
 import com.tygron.pub.api.enums.GameMode;
 import com.tygron.pub.examples.settings.ExampleGame;
@@ -51,12 +52,15 @@ public class PlanActionsExample {
 		System.out.println("Server token: " + dataConnector.getServerToken());
 		System.out.println("Client token: " + dataConnector.getClientToken());
 
+		// Create a player which will use the dataConnector.
+		PlayerModule player = new PlayerModule(dataConnector);
+
 		// Start the game
 		dataConnector.allowGameInteraction(true);
 
 		// Select a stakeholder
 		try {
-			success = dataConnector.selectStakeholder(ExampleGame.STAKEHOLDER);
+			success = player.selectStakeholder(ExampleGame.STAKEHOLDER);
 		} catch (Exception e) {
 			e.printStackTrace();
 			success = false;
@@ -73,8 +77,8 @@ public class PlanActionsExample {
 		System.out.println("Amount of buildings in game: " + receivedString);
 
 		// plan a construction on a self-owned location
-		dataConnector.buildingPlanConstruction(ExampleGame.STAKEHOLDER, ExampleGame.BUILDING1.FUNCTION,
-				ExampleGame.BUILDING1.FLOORS, ExampleGame.STAKEHOLDER_OWNED_LOCATIONS[0]);
+		player.buildingPlanConstruction(ExampleGame.BUILDING1.FUNCTION, ExampleGame.BUILDING1.FLOORS,
+				ExampleGame.STAKEHOLDER_OWNED_LOCATIONS[0]);
 
 		// Retrieve the size of the list of buildings, and check it against the value retrieved earlier.
 		data = dataConnector.getDataFromServerSession("buildings/size");

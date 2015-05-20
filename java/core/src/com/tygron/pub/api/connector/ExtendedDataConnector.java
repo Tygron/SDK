@@ -64,21 +64,6 @@ public class ExtendedDataConnector extends DataConnector {
 	}
 
 	/**
-	 * Plan the construction of a building.
-	 * @param stakeholderID The enacting stakeholder
-	 * @param functionID The id of the function for the building (the building type)
-	 * @param floors The amount of floors this building should have
-	 * @param location A multipolygon String
-	 */
-	public void buildingPlanConstruction(int stakeholderID, int functionID, int floors, String location) {
-		parameterCheckDetails(true, true, true);
-
-		sendDataToServerSession(SessionEvent.BUILDING_PLAN_CONSTRUCTION.url(),
-				Integer.toString(stakeholderID), Integer.toString(functionID), Integer.toString(floors),
-				location);
-	}
-
-	/**
 	 * Close the client's session with the server. If it's the last client connected to a session, it will
 	 * attempt to close the session as well. This will succeed if the client is allowed to do so given the
 	 * game mode.<br>
@@ -243,6 +228,19 @@ public class ExtendedDataConnector extends DataConnector {
 	}
 
 	/**
+	 * Used to check whether this ExtendedDataConnector is ready to be used as a player.
+	 * @return
+	 */
+	public boolean isPlayerReady() {
+		try {
+			parameterCheckDetails(true, true, true);
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
+	}
+
+	/**
 	 * Join a session on the server.
 	 * @param serverAddress The address for the server.
 	 * @param username The username to use to authenticate.
@@ -366,28 +364,6 @@ public class ExtendedDataConnector extends DataConnector {
 					throw new IllegalArgumentException("Client type invalid");
 				}
 			}
-		}
-	}
-
-	/**
-	 * Select a stakeholder for use during the session
-	 * @param stakeholderID
-	 * @return True when the stakeholder was selected successfully. False when the stakeholder was already
-	 *         selected by another client
-	 * @throws IllegalArgumentException If the response from the server indicates the stakeholder ID is
-	 *             invalid, this exception is thrown.
-	 */
-
-	public boolean selectStakeholder(int stakeholderID) throws IllegalArgumentException {
-		parameterCheckDetails(true, true, true);
-
-		DataPackage data = sendDataToServerSession(SessionEvent.STAKEHOLDER_SELECT.url(),
-				Integer.toString(stakeholderID), getClientToken());
-
-		if (data.isContentNull()) {
-			throw new IllegalArgumentException("No stakeholder with ID: " + stakeholderID);
-		} else {
-			return Boolean.valueOf(data.getContent());
 		}
 	}
 

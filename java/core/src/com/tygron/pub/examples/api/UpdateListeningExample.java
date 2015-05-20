@@ -11,6 +11,7 @@ import javafx.embed.swing.JFXPanel;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import com.tygron.pub.api.connector.ExtendedDataConnector;
+import com.tygron.pub.api.connector.modules.PlayerModule;
 import com.tygron.pub.api.data.UpdateMonitor;
 import com.tygron.pub.api.enums.ClientType;
 import com.tygron.pub.api.enums.GameMode;
@@ -80,9 +81,12 @@ public class UpdateListeningExample {
 		System.out.println("Client token (player): " + municipalConnector.getClientToken());
 		System.out.println(adminConnector.getBrowserURL());
 
+		// Create a player for the municipality
+		PlayerModule player = new PlayerModule(municipalConnector);
+
 		// Select a stakeholder
 		try {
-			success = municipalConnector.selectStakeholder(ExampleGame.STAKEHOLDER_MUNICIPALITY);
+			success = player.selectStakeholder(ExampleGame.STAKEHOLDER_MUNICIPALITY);
 		} catch (Exception e) {
 			e.printStackTrace();
 			success = false;

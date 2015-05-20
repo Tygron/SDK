@@ -21,7 +21,17 @@ public enum SessionEvent
 			"SettingsLogicEventType/SETTINGS_ALLOW_GAME_INTERACTION/"),
 
 		BUILDING_PLAN_CONSTRUCTION(
-			"PlayerEventType/BUILDING_PLAN_CONSTRUCTION/");
+			"PlayerEventType/BUILDING_PLAN_CONSTRUCTION/"),
+
+		BUILDING_PLAN_DEMOLISH(
+			"PlayerEventType/BUILDING_PLAN_DEMOLISH/"),
+
+		MESSAGE_ANSWER(
+			"PlayerEventType/MESSAGE_ANSWER"),
+		POPUP_ANSWER(
+			"PlayerEventType/POPUP_ANSWER"),
+		POPUP_ANSWER_WITH_DATE(
+			"PlayerEventType/POPUP_ANSWER_WITH_DATE");
 
 	private final String urlSegment;
 

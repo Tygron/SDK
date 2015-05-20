@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import com.tygron.pub.api.enums.MapLink;
 import com.tygron.pub.logger.Log;
+import com.tygron.pub.utils.StringUtils;
 
 /**
  * The DataMonitor is used as a means of storing data from a running session. It is automatically created when
@@ -20,7 +21,7 @@ public class DataMonitor {
 
 	{
 		for (String s : MapLink.stringValues()) {
-			versions.put(s, -1);
+			versions.put(s, StringUtils.NOTHING);
 		}
 	}
 
@@ -48,7 +49,7 @@ public class DataMonitor {
 	 */
 	public Integer getVersion(String mapLink) {
 		if (versions.get(mapLink) == null) {
-			versions.put(mapLink, -1);
+			versions.put(mapLink, StringUtils.NOTHING);
 		}
 		return versions.get(mapLink);
 	}
