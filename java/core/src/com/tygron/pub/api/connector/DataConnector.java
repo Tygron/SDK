@@ -152,7 +152,7 @@ public class DataConnector {
 	 * Request data from https://www.tygronengine.com/api/slots/X/lists/[url]
 	 */
 	public DataPackage getDataFromServerSession(MapLink mapLink) {
-		return getDataFromServerSession(mapLink.toString());
+		return getDataFromServerSession(mapLink.url());
 	}
 
 	/**
@@ -224,7 +224,9 @@ public class DataConnector {
 		int statusCode = StringUtils.NOTHING;
 
 		requestTime = System.currentTimeMillis();
-		Response response = makeRequest(url, requestType, params);
+		Response response = makeRequest(url, requestType, params); // javax.ws.rs.ProcessingException:
+																	// java.net.SocketException: Unexpected
+																	// end of file from server
 		requestTime = System.currentTimeMillis() - requestTime;
 
 		statusCode = response.getStatus();

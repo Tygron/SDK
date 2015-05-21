@@ -22,6 +22,23 @@ public class PlayerModule {
 	}
 
 	/**
+	 * Retrieve a specific building.
+	 * @param messageID The ID of the building.
+	 * @return The Building.
+	 */
+	public Building buildingGetBuilding(int buildingID) {
+		isPlayerReady();
+
+		DataPackage data = dataConnector.getDataFromServerSession(MapLink.BUILDINGS.itemUrl(buildingID));
+		if (data.getStatusCode() == 500) {
+			return null;
+		}
+		Building building = JsonUtils.mapJsonToType(data.getContent(), Building.class);
+
+		return building;
+	}
+
+	/**
 	 * Plan the construction of a building.
 	 * @param functionID The id of the function for the building (the building type).
 	 * @param floors The amount of floors this building should have.
@@ -54,6 +71,14 @@ public class PlayerModule {
 		sendPlayerEvent(SessionEvent.BUILDING_PLAN_DEMOLISH, Integer.toString(buildingID));
 	}
 
+	/**
+	 * Get the current StakeholderID.
+	 * @return The player's stakeholderID.
+	 */
+	public int getStakeholderID() {
+		return stakeholderID;
+	}
+
 	protected boolean isPlayerReady() {
 		return isPlayerReady(true);
 	}
@@ -62,7 +87,7 @@ public class PlayerModule {
 		if (dataConnector == null || dataConnector.getServerSlot() == null
 				|| dataConnector.getServerToken() == null || dataConnector.getClientToken() == null
 				|| (stakeholder && stakeholderID == StringUtils.NOTHING)) {
-			throw new IllegalStateException("The registered ExtendedDataConnector is not ready");
+			throw new IllegalStateException("The registered DataConnector is not ready");
 		}
 		return true;
 	}
@@ -103,6 +128,16 @@ public class PlayerModule {
 		Message message = JsonUtils.mapJsonToType(data.getContent(), Message.class);
 
 		return message;
+	}
+
+	/**
+	 * Perform a ping on a specified area.
+	 * @param x The X coordinate
+	 * @param y The Y coordinate
+	 */
+	public void ping(int x, int y) {
+		sendPlayerEvent(SessionEvent.STAKEHOLDER_SET_LOCATION, "POINT (" + Integer.toString(x) + " "
+				+ Integer.toString(y) + ")", StringUtils.TRUE);
 	}
 
 	/**

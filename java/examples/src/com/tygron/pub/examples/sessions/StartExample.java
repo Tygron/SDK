@@ -1,9 +1,9 @@
-package com.tygron.pub.examples.api;
+package com.tygron.pub.examples.sessions;
 
 import com.tygron.pub.api.connector.DataConnector;
 import com.tygron.pub.api.connector.DataPackage;
-import com.tygron.pub.examples.settings.ExampleGame;
-import com.tygron.pub.examples.settings.ExampleSettings;
+import com.tygron.pub.examples.utilities.ExampleGame;
+import com.tygron.pub.examples.utilities.ExampleSettings;
 
 /**
  * This api-based example triggers an event on the Tygron Engine. It starts the project "Climategame" in
@@ -15,7 +15,7 @@ import com.tygron.pub.examples.settings.ExampleSettings;
  *
  */
 
-public class StartSessionExample {
+public class StartExample {
 
 	public static void main(String[] args) {
 		// We create an object which will facilitate our communication with the engine, and provide it with

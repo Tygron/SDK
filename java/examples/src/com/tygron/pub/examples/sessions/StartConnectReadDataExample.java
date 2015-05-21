@@ -1,4 +1,4 @@
-package com.tygron.pub.examples.api;
+package com.tygron.pub.examples.sessions;
 
 import java.rmi.UnexpectedException;
 import java.util.ArrayList;
@@ -8,8 +8,8 @@ import com.tygron.pub.api.connector.DataPackage;
 import com.tygron.pub.api.connector.ExtendedDataConnector;
 import com.tygron.pub.api.enums.ClientType;
 import com.tygron.pub.api.enums.GameMode;
-import com.tygron.pub.examples.settings.ExampleGame;
-import com.tygron.pub.examples.settings.ExampleSettings;
+import com.tygron.pub.examples.utilities.ExampleGame;
+import com.tygron.pub.examples.utilities.ExampleSettings;
 import com.tygron.pub.utils.JsonUtils;
 
 /**
@@ -23,7 +23,7 @@ import com.tygron.pub.utils.JsonUtils;
  *
  */
 
-public class StartSessionExample2 {
+public class StartConnectReadDataExample {
 
 	public static void main(String[] args) {
 		ExtendedDataConnector dataConnector = new ExtendedDataConnector();

@@ -1,4 +1,4 @@
-package com.tygron.pub.examples.standalone;
+package com.tygron.pub.examples.sessions;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -9,8 +9,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tygron.pub.examples.settings.ExampleGame;
-import com.tygron.pub.examples.settings.ExampleSettings;
+import com.tygron.pub.examples.utilities.ExampleGame;
+import com.tygron.pub.examples.utilities.ExampleSettings;
 
 /**
  * This stand-alone example triggers an event on the Tygron Engine. It starts the project "Climategame" in
@@ -22,7 +22,7 @@ import com.tygron.pub.examples.settings.ExampleSettings;
  *
  */
 
-public class StartSessionExample {
+public class StartSessionWithoutSDKExample {
 
 	public static final ObjectMapper MAPPER;
 

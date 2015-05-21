@@ -1,4 +1,4 @@
-package com.tygron.pub.examples.settings;
+package com.tygron.pub.examples.utilities;
 
 import java.io.FileInputStream;
 import java.util.Properties;
@@ -29,7 +29,6 @@ public class ExampleSettings {
 		if (USERNAME == null || USERNAME.equals("") || PASSWORD == null || PASSWORD.equals("")
 				|| SERVER == null || SERVER.equals("")) {
 			try {
-
 				Properties prop = new Properties();
 				FileInputStream in = new FileInputStream("./authentication.properties");
 				prop.load(in);

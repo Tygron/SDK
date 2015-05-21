@@ -32,16 +32,20 @@ public class Popup {
 	private String title = StringUtils.EMPTY;
 	private String text = StringUtils.EMPTY;
 
+	// INTERACTION
+	// INTERACTION_WITH_DATE
+	// ACTOR_STANDARD
 	private String type = StringUtils.EMPTY;
 	private boolean ping = false;
+	private String point = StringUtils.EMPTY;
 
 	private String linkType = StringUtils.EMPTY;
 	private int linkID = StringUtils.NOTHING;
 
 	private Answer[] answers = new Answer[0];
-	private int[] visibleForActorIDs = new int[0];
+	private Integer[] visibleForActorIDs = new Integer[0];
 
-	public int[] getActorIDs() {
+	public Integer[] getActorIDs() {
 		return visibleForActorIDs;
 	}
 
@@ -70,6 +74,21 @@ public class Popup {
 		return linkType;
 	}
 
+	public Double[] getPoint() {
+		String strippedPoint = getPointString().replace("POINT (", "");
+		strippedPoint = strippedPoint.replace(")", "");
+		String[] splitPoint = strippedPoint.split(" ");
+		try {
+			return new Double[] { Double.parseDouble(splitPoint[0]), Double.parseDouble(splitPoint[1]) };
+		} catch (Exception e) {
+			return new Double[] { (double) StringUtils.NOTHING, (double) StringUtils.NOTHING };
+		}
+	}
+
+	public String getPointString() {
+		return point;
+	}
+
 	public String getText() {
 		return text;
 	}
@@ -89,4 +108,5 @@ public class Popup {
 	public boolean isVisibleToStakeholder(int stakeholderID) {
 		return Arrays.asList(visibleForActorIDs).contains(stakeholderID);
 	}
+
 }

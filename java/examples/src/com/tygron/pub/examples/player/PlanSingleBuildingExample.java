@@ -1,4 +1,4 @@
-package com.tygron.pub.examples.api;
+package com.tygron.pub.examples.player;
 
 import java.rmi.UnexpectedException;
 import java.util.ArrayList;
@@ -9,8 +9,8 @@ import com.tygron.pub.api.connector.ExtendedDataConnector;
 import com.tygron.pub.api.connector.modules.PlayerModule;
 import com.tygron.pub.api.enums.ClientType;
 import com.tygron.pub.api.enums.GameMode;
-import com.tygron.pub.examples.settings.ExampleGame;
-import com.tygron.pub.examples.settings.ExampleSettings;
+import com.tygron.pub.examples.utilities.ExampleGame;
+import com.tygron.pub.examples.utilities.ExampleSettings;
 import com.tygron.pub.utils.JsonUtils;
 
 /**
@@ -26,7 +26,7 @@ import com.tygron.pub.utils.JsonUtils;
  *
  */
 
-public class PlanActionsExample {
+public class PlanSingleBuildingExample {
 
 	public static void main(String[] args) {
 		ExtendedDataConnector dataConnector = new ExtendedDataConnector();
@@ -60,7 +60,7 @@ public class PlanActionsExample {
 
 		// Select a stakeholder
 		try {
-			success = player.selectStakeholder(ExampleGame.STAKEHOLDER);
+			success = player.selectStakeholder(ExampleGame.STAKEHOLDER_SSH);
 		} catch (Exception e) {
 			e.printStackTrace();
 			success = false;
@@ -112,7 +112,8 @@ public class PlanActionsExample {
 				String popupID = popup.get("id").toString();
 				String answerID = null;
 				String date = "1420113600000"; // 12:00 PM, 1-1-2015
-				boolean visible = ((List) popup.get("visibleForActorIDs")).contains(ExampleGame.STAKEHOLDER);
+				boolean visible = ((List) popup.get("visibleForActorIDs"))
+						.contains(ExampleGame.STAKEHOLDER_SSH);
 				boolean linkType = popup.get("linkType").equals("BUILDINGS");
 				boolean requiresDate = popup.get("type").equals("INTERACTION_WITH_DATE");
 
@@ -127,7 +128,7 @@ public class PlanActionsExample {
 				// This popup meets all criteria, and has the correct sorts of answers, so we'll answer it
 				if (visible && linkType && requiresDate && answerID != null) {
 					dataConnector.sendDataToServerSession("PlayerEventType/POPUP_ANSWER_WITH_DATE",
-							Integer.toString(ExampleGame.STAKEHOLDER), popupID, answerID, date);
+							Integer.toString(ExampleGame.STAKEHOLDER_SSH), popupID, answerID, date);
 				}
 
 			} catch (ClassCastException e) {

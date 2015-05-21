@@ -111,12 +111,7 @@ public enum MapLink {
 		return this.url() + itemNumber;
 	}
 
-	@Override
-	public String toString() {
-		return this.name().replace("_", "").toLowerCase();
-	}
-
 	public String url() {
-		return this.toString() + StringUtils.URL_DELIMITER;
+		return this.name().replace("_", "").toLowerCase() + StringUtils.URL_DELIMITER;
 	}
 }

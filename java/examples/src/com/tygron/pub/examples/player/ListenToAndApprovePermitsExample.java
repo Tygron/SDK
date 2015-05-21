@@ -1,4 +1,4 @@
-package com.tygron.pub.examples.api;
+package com.tygron.pub.examples.player;
 
 import java.rmi.UnexpectedException;
 import java.util.Arrays;
@@ -16,8 +16,8 @@ import com.tygron.pub.api.data.UpdateMonitor;
 import com.tygron.pub.api.enums.ClientType;
 import com.tygron.pub.api.enums.GameMode;
 import com.tygron.pub.api.listeners.UpdateListenerInterface;
-import com.tygron.pub.examples.settings.ExampleGame;
-import com.tygron.pub.examples.settings.ExampleSettings;
+import com.tygron.pub.examples.utilities.ExampleGame;
+import com.tygron.pub.examples.utilities.ExampleSettings;
 
 /**
  * This api-based example performs all necessary steps to connect to a game. It then opens another connection,
@@ -32,7 +32,7 @@ import com.tygron.pub.examples.settings.ExampleSettings;
  * @author Rudolf
  *
  */
-public class UpdateListeningExample {
+public class ListenToAndApprovePermitsExample {
 	public static void main(String[] args) {
 
 		// We start 2 dataconnectors. 1 for the admin, and the second for a player (the municipality).

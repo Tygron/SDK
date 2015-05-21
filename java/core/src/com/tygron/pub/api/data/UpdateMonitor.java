@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import javax.ws.rs.ProcessingException;
 import javax.xml.ws.http.HTTPException;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.tygron.pub.api.connector.DataConnector;
@@ -383,6 +384,8 @@ public class UpdateMonitor {
 					throw new IllegalStateException(
 							"DataConnector is not in correct state to perform requests. Check that a server address and server slot have been registered.",
 							e);
+				} catch (ProcessingException e) {
+					throw e;
 				} catch (Exception e) {
 					throw new IllegalStateException(
 							"Something has occured which prevented the dataConnector from connecting.", e);

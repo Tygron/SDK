@@ -10,6 +10,7 @@ public class Building {
 	private int functionTypeID = StringUtils.NOTHING;
 	private int ownerID = StringUtils.NOTHING;
 	private String polygons = StringUtils.EMPTY;
+	private String state = StringUtils.EMPTY;
 
 	public int getFunctionTypeID() {
 		return functionTypeID;
@@ -25,5 +26,9 @@ public class Building {
 
 	public String getPolygons() {
 		return polygons;
+	}
+
+	public String getState() {
+		return state;
 	}
 }

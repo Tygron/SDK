@@ -16,6 +16,12 @@ import com.tygron.pub.logger.Log;
  */
 public class DataUtils {
 
+	public static <T> T castToItemObject(Map<?, ?> map, Class<T> target) {
+		// We can do this via reflection, or take a shortcut using the json utilities.
+		String json = JsonUtils.mapObjectToJson(map);
+		return JsonUtils.mapJsonToType(json, target);
+	}
+
 	/**
 	 * Collapse a map returned by the long-polling update mechanic of the API into a standard format.
 	 * @param map The map of data as returned by the update mechanic of the API, of the format Map&lt;String,
