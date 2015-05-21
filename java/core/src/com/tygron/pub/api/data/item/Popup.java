@@ -5,20 +5,15 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.tygron.pub.utils.StringUtils;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Popup {
+public class Popup extends Item {
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
-	private static class Answer {
-		private int id = StringUtils.NOTHING;
+	private static class Answer extends Item {
 
 		private String contents = StringUtils.EMPTY;
 
 		public String getContents() {
 			return contents;
-		}
-
-		public int getID() {
-			return id;
 		}
 	}
 
@@ -28,7 +23,6 @@ public class Popup {
 			INTERACTION_WITH_DATE;
 	}
 
-	private int id = StringUtils.NOTHING;
 	private String title = StringUtils.EMPTY;
 	private String text = StringUtils.EMPTY;
 
@@ -60,10 +54,6 @@ public class Popup {
 
 	public Answer[] getAnswers() {
 		return answers;
-	}
-
-	public int getID() {
-		return id;
 	}
 
 	public int getLinkID() {

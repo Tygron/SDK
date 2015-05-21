@@ -4,9 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.tygron.pub.utils.StringUtils;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Building {
-
-	private int id = StringUtils.NOTHING;
+public class Building extends Item {
 	private int functionTypeID = StringUtils.NOTHING;
 	private int ownerID = StringUtils.NOTHING;
 	private String polygons = StringUtils.EMPTY;
@@ -14,10 +12,6 @@ public class Building {
 
 	public int getFunctionTypeID() {
 		return functionTypeID;
-	}
-
-	public int getID() {
-		return id;
 	}
 
 	public int getOwnerID() {

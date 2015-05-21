@@ -6,12 +6,7 @@ import com.tygron.pub.utils.StringUtils;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Setting {
 
-	private int id = StringUtils.NOTHING;
 	private String value = StringUtils.EMPTY;
-
-	public int getID() {
-		return id;
-	}
 
 	public String getValue() {
 		return value;

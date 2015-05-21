@@ -3,6 +3,7 @@ package com.tygron.pub.api.connector.modules;
 import com.tygron.pub.api.connector.DataConnector;
 import com.tygron.pub.api.connector.DataPackage;
 import com.tygron.pub.api.data.item.Building;
+import com.tygron.pub.api.data.item.Item;
 import com.tygron.pub.api.data.item.Message;
 import com.tygron.pub.api.data.item.Popup;
 import com.tygron.pub.api.enums.MapLink;
@@ -33,7 +34,7 @@ public class PlayerModule {
 		if (data.getStatusCode() == 500) {
 			return null;
 		}
-		Building building = JsonUtils.mapJsonToType(data.getContent(), Building.class);
+		Building building = JsonUtils.mapJsonToType(data.getContent(), Item.get(Building.class));
 
 		return building;
 	}
@@ -125,7 +126,7 @@ public class PlayerModule {
 		if (data.getStatusCode() == 500) {
 			return null;
 		}
-		Message message = JsonUtils.mapJsonToType(data.getContent(), Message.class);
+		Message message = JsonUtils.mapJsonToType(data.getContent(), Item.get(Message.class));
 
 		return message;
 	}
@@ -197,7 +198,7 @@ public class PlayerModule {
 		if (data.getStatusCode() == 500) {
 			return null;
 		}
-		Popup popup = JsonUtils.mapJsonToType(data.getContent(), Popup.class);
+		Popup popup = JsonUtils.mapJsonToType(data.getContent(), Item.get(Popup.class));
 
 		return popup;
 	}
