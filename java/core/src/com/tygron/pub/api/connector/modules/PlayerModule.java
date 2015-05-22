@@ -205,7 +205,7 @@ public class PlayerModule {
 
 	/**
 	 * Select a stakeholder for use during the session.
-	 * @param stakeholderID
+	 * @param stakeholderID The stakeholder to select.
 	 * @return True when the stakeholder was selected successfully. False when the stakeholder was already
 	 *         selected by another client.
 	 * @throws IllegalArgumentException If the response from the server indicates the stakeholder ID is
@@ -228,6 +228,12 @@ public class PlayerModule {
 		}
 	}
 
+	/**
+	 * This function prepends the call to an event with the stakeholder's ID
+	 * @param event The event to fire.
+	 * @param params The parameters (excluding the ID of the enacting stakeholder.
+	 * @return The DataPackage resulting from the call.
+	 */
 	private DataPackage sendPlayerEvent(SessionEvent event, String... params) {
 		String[] newParams = new String[params.length + 1];
 		newParams[0] = Integer.toString(stakeholderID);
