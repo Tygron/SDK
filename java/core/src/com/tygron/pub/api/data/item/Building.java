@@ -5,6 +5,21 @@ import com.tygron.pub.utils.StringUtils;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Building extends Item {
+	public static enum State {
+			NOTHING,
+			WAITING_FOR_DATE,
+			REQUEST_ZONING_APPROVAL,
+			REQUEST_CONSTRUCTION_APPROVAL,
+			CONSTRUCTION_APPROVAL,
+			PENDING_CONSTRUCTION,
+			CONSTRUCTING,
+			READY,
+			WAITING_FOR_DEMOLISH_DATE,
+			PENDING_DEMOLISHING,
+			DEMOLISHING,
+			DEMOLISH_FINISHED;
+	}
+
 	private int functionTypeID = StringUtils.NOTHING;
 	private int floors = StringUtils.NOTHING;
 	private int ownerID = StringUtils.NOTHING;
