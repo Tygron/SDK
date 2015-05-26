@@ -53,7 +53,7 @@ public class PlayerModule {
 	}
 
 	/**
-	 * Plan the construction of a building.
+	 * Plan the demolition of a building.
 	 * @param building The building to demolish.
 	 */
 	public void buildingPlanDemolish(Building building) {
@@ -63,13 +63,33 @@ public class PlayerModule {
 	}
 
 	/**
-	 * Plan the construction of a building.
+	 * Plan the demolition of a building.
 	 * @param buildingID The building to demolish.
 	 */
 	public void buildingPlanDemolish(int buildingID) {
 		isPlayerReady();
 
 		sendPlayerEvent(SessionEvent.BUILDING_PLAN_DEMOLISH, Integer.toString(buildingID));
+	}
+
+	/**
+	 * Plan the demolition of a building.
+	 * @param locationString A multipolygon description indicating the location to demolish.
+	 */
+	public void buildingPlanDemolish(String locationString) {
+		isPlayerReady();
+
+		sendPlayerEvent(SessionEvent.BUILDING_PLAN_DEMOLISH_COORDINATES, locationString, "SURFACE");
+	}
+
+	/**
+	 * Plan the demolition of an underground construction.
+	 * @param locationString A multipolygon description indicating the location to demolish.
+	 */
+	public void buildingPlanDemolishUnderground(String locationString) {
+		isPlayerReady();
+
+		sendPlayerEvent(SessionEvent.BUILDING_PLAN_DEMOLISH_COORDINATES, locationString, "UNDERGROUND");
 	}
 
 	/**

@@ -19,14 +19,21 @@ public class GamePlayUtils {
 			if (!(currentBuilding.getPolygons().equals(location))) {
 				continue;
 			}
-			if (!(currentBuilding.getOwnerID() == ownerID)) {
-				continue;
+			if (ownerID != StringUtils.NOTHING) {
+				if (!(currentBuilding.getOwnerID() == ownerID)) {
+					continue;
+				}
 			}
-			if (!(currentBuilding.getFunctionTypeID() == functionID)) {
-				continue;
+			if (functionID != StringUtils.NOTHING) {
+				if (!(currentBuilding.getFunctionTypeID() == functionID)) {
+					continue;
+				}
 			}
-			if (!(currentBuilding.getFloors() == floors)) {
-				continue;
+
+			if (floors != StringUtils.NOTHING) {
+				if (!(currentBuilding.getFloors() == floors)) {
+					continue;
+				}
 			}
 			return currentBuilding;
 		}

@@ -5,7 +5,7 @@ import com.tygron.pub.utils.StringUtils;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Building extends Item {
-	public static enum State {
+	public static enum BuildingState {
 			NOTHING,
 			WAITING_FOR_DATE,
 			REQUEST_ZONING_APPROVAL,
