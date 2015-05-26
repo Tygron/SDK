@@ -6,9 +6,14 @@ import com.tygron.pub.utils.StringUtils;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Building extends Item {
 	private int functionTypeID = StringUtils.NOTHING;
+	private int floors = StringUtils.NOTHING;
 	private int ownerID = StringUtils.NOTHING;
 	private String polygons = StringUtils.EMPTY;
 	private String state = StringUtils.EMPTY;
+
+	public int getFloors() {
+		return floors;
+	}
 
 	public int getFunctionTypeID() {
 		return functionTypeID;

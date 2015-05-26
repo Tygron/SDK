@@ -17,6 +17,52 @@ public class Popup extends Item {
 		}
 	}
 
+	public static enum PopupAnswers {
+
+			WAITING_FOR_DATE(
+				"yes",
+				"no"),
+			REQUEST_CONSTRUCTION_APPROVAL(
+				"yes",
+				"no"),
+			REQUEST_ZONING_APPROVAL(
+				"yes",
+				"no"),
+			CONSTRUCTION_APPROVED(
+				"confirm",
+				"revert"),
+			CONSTRUCTION_DENIED(
+				"ok"),
+			PENDING_CONSTRUCTION(
+				"no",
+				"yes"),
+			CONSTRUCTING;
+
+		private final String[] answers;
+
+		private PopupAnswers(String... answers) {
+			this.answers = answers;
+		}
+
+		public String[] getAnswers() {
+			return answers.clone();
+		}
+
+		public String getConservativeAnswer() {
+			if (answers.length == 0) {
+				return null;
+			}
+			return answers[answers.length - 1];
+		}
+
+		public String getProgressiveAnswer() {
+			if (answers.length == 0) {
+				return null;
+			}
+			return answers[0];
+		}
+	}
+
 	public static enum PopupType {
 			INTERACTION,
 			ACTOR_STANDARD,

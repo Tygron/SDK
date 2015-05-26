@@ -16,6 +16,14 @@ import com.tygron.pub.logger.Log;
  */
 public class DataUtils {
 
+	public static <T> Map<Integer, T> castToItemMap(Map<Integer, Map<?, ?>> map, Class<T> target) {
+		Map<Integer, T> returnable = new HashMap<Integer, T>();
+		for (Entry<Integer, Map<?, ?>> item : map.entrySet()) {
+			returnable.put(item.getKey(), castToItemObject(item.getValue(), target));
+		}
+		return returnable;
+	}
+
 	public static <T> T castToItemObject(Map<?, ?> map, Class<T> target) {
 		// We can do this via reflection, or take a shortcut using the json utilities.
 		String json = JsonUtils.mapObjectToJson(map);
@@ -77,6 +85,14 @@ public class DataUtils {
 		}
 
 		return returnable;
+	}
+
+	public static <T> Map<Integer, T> dataListToItemMap(List<Map<String, Map<?, ?>>> list, Class<T> target) {
+		Map<Integer, Map<?, ?>> map = dataListToMap(list);
+		if (list == null) {
+			return null;
+		}
+		return castToItemMap(map, target);
 	}
 
 	/**

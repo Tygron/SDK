@@ -30,14 +30,6 @@ public class DataConnector {
 		CLIENT.register(HttpAuthenticationFeature.basicBuilder().build());
 	}
 
-	private final static String URL_SEGMENT_API = "api/";
-	private final static String URL_SEGMENT_SERVERSLOT = "slots/";
-	private final static String URL_SEGMENT_LISTS = "lists/";
-	private final static String URL_SEGMENT_EVENT = "event/";
-	private final static String URL_SEGMENT_SERVICES = "services/";
-	private final static String URL_SEGMENT_UPDATE = "update/";
-	private final static String URL_SEGMENT_JSON_QUERY_PARAMETER = "f=JSON";
-
 	private String username = null;
 	private String password = null;
 	private String serverToken = null;
@@ -97,20 +89,20 @@ public class DataConnector {
 			// if (serverToken == null) {
 			// throw new IllegalStateException("Server token required, but not set");
 			// }
-			prefix += URL_SEGMENT_SERVERSLOT + serverSlot + StringUtils.URL_DELIMITER;
+			prefix += StringUtils.URL_SEGMENT_SERVERSLOT + serverSlot + StringUtils.URL_DELIMITER;
 		}
 		if (addList) {
-			prefix += URL_SEGMENT_LISTS;
+			prefix += StringUtils.URL_SEGMENT_LISTS;
 		}
 		if (addServices) {
-			prefix += URL_SEGMENT_SERVICES;
+			prefix += StringUtils.URL_SEGMENT_SERVICES;
 		}
 		if (addEvent) {
-			prefix += URL_SEGMENT_EVENT;
+			prefix += StringUtils.URL_SEGMENT_EVENT;
 		}
 
-		if (!url.contains(URL_SEGMENT_JSON_QUERY_PARAMETER)) {
-			postfix = (url.contains("?") ? "&" : "?") + URL_SEGMENT_JSON_QUERY_PARAMETER;
+		if (!url.contains(StringUtils.URL_SEGMENT_JSON_QUERY_PARAMETER)) {
+			postfix = (url.contains("?") ? "&" : "?") + StringUtils.URL_SEGMENT_JSON_QUERY_PARAMETER;
 		}
 
 		return prefix + url + postfix;
@@ -289,7 +281,7 @@ public class DataConnector {
 	}
 
 	public DataPackage sendUpdateRequestToServerSession(Map<String, Integer> params) {
-		String fullURL = createFullURL(URL_SEGMENT_UPDATE, true, true, false, false, false);
+		String fullURL = createFullURL(StringUtils.URL_SEGMENT_UPDATE, true, true, false, false, false);
 		return makeRequestToURL(fullURL, RequestType.POST, params);
 	}
 
@@ -320,8 +312,8 @@ public class DataConnector {
 			if (!this.serverAddress.endsWith(StringUtils.URL_DELIMITER)) {
 				this.serverAddress += StringUtils.URL_DELIMITER;
 			}
-			if (!this.serverAddress.endsWith(URL_SEGMENT_API)) {
-				this.serverAddress += URL_SEGMENT_API;
+			if (!this.serverAddress.endsWith(StringUtils.URL_SEGMENT_API)) {
+				this.serverAddress += StringUtils.URL_SEGMENT_API;
 			}
 		}
 	}

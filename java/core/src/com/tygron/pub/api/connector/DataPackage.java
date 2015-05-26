@@ -17,6 +17,10 @@ public class DataPackage {
 		return this.content;
 	}
 
+	public int getContentInt() {
+		return Integer.parseInt(this.content);
+	}
+
 	public int getRequestTime() {
 		return this.requestTime;
 	}

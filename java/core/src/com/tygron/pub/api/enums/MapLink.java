@@ -111,7 +111,15 @@ public enum MapLink {
 		return this.url() + itemNumber;
 	}
 
+	public String sizeUrl() {
+		return this.url() + StringUtils.URL_SEGMENT_SIZE;
+	}
+
 	public String url() {
 		return this.name().replace("_", "").toLowerCase() + StringUtils.URL_DELIMITER;
+	}
+
+	public String versionUrl() {
+		return this.url() + StringUtils.URL_SEGMENT_VERSION;
 	}
 }
