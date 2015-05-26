@@ -81,7 +81,7 @@ public class PlanMultipleBuildingsExample {
 				// Is the building the SSH's?
 				boolean SSHRequest = false;
 
-				if (popup.getLinkyType().equals(MapLink.BUILDINGS.name())) {
+				if (popup.getLinkType().equals(MapLink.BUILDINGS.name())) {
 					Building building = municipalPlayer.buildingGetBuilding(popup.getLinkID());
 					if (building.getOwnerID() == SSHPlayer.getStakeholderID()) {
 						SSHRequest = true;
@@ -139,7 +139,7 @@ public class PlanMultipleBuildingsExample {
 				// Get the appropriate answer?
 				String answer = StringUtils.EMPTY;
 				long date = StringUtils.NOTHING;
-				if (popup.getLinkyType().equals(MapLink.BUILDINGS.name())) {
+				if (popup.getLinkType().equals(MapLink.BUILDINGS.name())) {
 
 					// Check it relates to an existing building, and that it's the SSH's building.
 					Building building = municipalPlayer.buildingGetBuilding(popup.getLinkID());
