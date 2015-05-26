@@ -60,7 +60,7 @@ public class Popup extends Item {
 		return linkID;
 	}
 
-	public String getLinkyType() {
+	public String getLinkType() {
 		return linkType;
 	}
 
