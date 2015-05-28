@@ -36,6 +36,14 @@ public class Popup extends Item {
 			PENDING_CONSTRUCTION(
 				"no",
 				"yes"),
+			WAITING_FOR_DATE_UPGRADE(
+				// This is not directly linked
+				"confirm",
+				"revert"),
+			UPGRADE_APPROVED(
+				// This is not directly linked
+				"yes",
+				"no"),
 			CONSTRUCTING;
 
 		private final String[] answers;
