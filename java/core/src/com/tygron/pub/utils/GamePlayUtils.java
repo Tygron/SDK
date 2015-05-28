@@ -7,13 +7,50 @@ import java.util.Map;
 import com.tygron.pub.api.connector.DataConnector;
 import com.tygron.pub.api.connector.DataPackage;
 import com.tygron.pub.api.data.item.Building;
+import com.tygron.pub.api.data.item.CodedEvent;
+import com.tygron.pub.api.data.item.Function;
+import com.tygron.pub.api.data.item.FunctionOverride;
+import com.tygron.pub.api.data.item.Item;
+import com.tygron.pub.api.data.item.Message;
+import com.tygron.pub.api.data.item.Message.MessageAnswer;
 import com.tygron.pub.api.data.item.Popup;
 import com.tygron.pub.api.enums.MapLink;
+import com.tygron.pub.api.enums.events.AnswerEvent;
+import com.tygron.pub.api.enums.events.SessionEvent;
 
 public class GamePlayUtils {
 
+	public static void answerMessage(int stakeholderID, int messageID, int answerID,
+			DataConnector dataConnector) {
+		dataConnector.sendDataToServerSession(SessionEvent.MESSAGE_ANSWER, Integer.toString(stakeholderID),
+				Integer.toString(messageID), Integer.toString(answerID));
+	}
+
 	public static Building getBuilding(int ownerID, String location, int functionID, int floors,
 			Collection<Building> buildings) {
+		try {
+			for (Building building : getBuildings(ownerID, location, functionID, floors, buildings)) {
+				return building;
+			}
+		} catch (IndexOutOfBoundsException e) {
+		}
+		return null;
+	}
+
+	public static Building getBuilding(int ownerID, String location, int functionID, int floors,
+			DataConnector dataConnector) {
+		try {
+			for (Building building : getBuildings(ownerID, location, functionID, floors, dataConnector)) {
+				return building;
+			}
+		} catch (IndexOutOfBoundsException e) {
+		}
+		return null;
+	}
+
+	public static Collection<Building> getBuildings(int ownerID, String location, int functionID, int floors,
+			Collection<Building> buildings) {
+		Collection<Building> returnable = new LinkedList<Building>();
 
 		for (Building currentBuilding : buildings) {
 			if (!(currentBuilding.getPolygons().equals(location))) {
@@ -35,12 +72,12 @@ public class GamePlayUtils {
 					continue;
 				}
 			}
-			return currentBuilding;
+			returnable.add(currentBuilding);
 		}
-		return null;
+		return returnable;
 	}
 
-	public static Building getBuilding(int ownerID, String location, int functionID, int floors,
+	public static Collection<Building> getBuildings(int ownerID, String location, int functionID, int floors,
 			DataConnector dataConnector) {
 		Map<Integer, Building> buildings = null;
 		DataPackage data = dataConnector.getDataFromServerSession(MapLink.BUILDINGS);
@@ -56,7 +93,81 @@ public class GamePlayUtils {
 		} catch (ClassCastException e) {
 			return null;
 		}
-		return getBuilding(ownerID, location, functionID, floors, buildings.values());
+		return getBuildings(ownerID, location, functionID, floors, buildings.values());
+	}
+
+	public static int getFloorDefaultForFunction(int functionID, DataConnector dataConnector) {
+		return getFloorRangeForFunction(functionID, dataConnector)[2];
+	}
+
+	public static int getFloorMaxForFunction(int functionID, DataConnector dataConnector) {
+		return getFloorRangeForFunction(functionID, dataConnector)[1];
+	}
+
+	public static int getFloorMinForFunction(int functionID, DataConnector dataConnector) {
+		return getFloorRangeForFunction(functionID, dataConnector)[0];
+	}
+
+	public static int[] getFloorRangeForFunction(int functionID, DataConnector dataConnector) {
+		DataPackage data = dataConnector.getDataFromServerSession(MapLink.FUNCTIONS);
+		Function function = Item.mapJsonToItem(data.getContent(), Function.class);
+		data = dataConnector.getDataFromServerSession(MapLink.FUNCTIONS);
+		FunctionOverride functionOverride = Item.mapJsonToItem(data.getContent(), FunctionOverride.class);
+
+		return new int[] { function.getFloorsMin(functionOverride), function.getFloorsMax(functionOverride),
+				function.getFloorsDefault(functionOverride) };
+	}
+
+	public static List<Message> getMessagesRelatedToBuilding(Building building, Collection<Message> messages) {
+		List<Message> returnable = new LinkedList<Message>();
+
+		if (building == null) {
+			return returnable;
+		}
+
+		for (Message currentMessage : messages) {
+			messageAnswerLoop: for (MessageAnswer answer : currentMessage.getAnswers()) {
+				for (CodedEvent event : answer.getEvents()) {
+					try {
+						String eventType = event.getSimpleEventType();
+						if (AnswerEvent.UPGRADE_APPROVAL.toString().equals(eventType)) {
+							if (event.getParameters().get(2).equals(building.getID())) {
+								returnable.add(currentMessage);
+								break messageAnswerLoop;
+							}
+						}
+					} catch (IndexOutOfBoundsException e) {
+					}
+				}
+			}
+		}
+
+		return returnable;
+	}
+
+	public static List<Message> getMessagesRelatedToBuilding(Building building, DataConnector dataConnector) {
+		Map<Integer, Message> messages = null;
+		DataPackage data = dataConnector.getDataFromServerSession(MapLink.MESSAGES);
+
+		try {
+			List<?> messagesList = JsonUtils.mapJsonToList(data.getContent());
+			messages = DataUtils
+					.dataListToItemMap((List<Map<String, Map<?, ?>>>) messagesList, Message.class);
+		} catch (NullPointerException e) {
+			return null;
+		} catch (IllegalArgumentException e) {
+			return null;
+		} catch (ClassCastException e) {
+			return null;
+		}
+		return getMessagesRelatedToBuilding(building, messages.values());
+	}
+
+	public static List<Message> getMessagesRelatedToBuilding(int ownerID, String location, int functionID,
+			int floors, DataConnector dataConnector) {
+		Building building = getBuilding(ownerID, location, functionID, floors, dataConnector);
+
+		return getMessagesRelatedToBuilding(building, dataConnector);
 	}
 
 	public static List<Popup> getPopupsRelatedToBuilding(Building building, Collection<Popup> popups) {

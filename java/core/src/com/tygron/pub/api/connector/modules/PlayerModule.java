@@ -3,9 +3,11 @@ package com.tygron.pub.api.connector.modules;
 import com.tygron.pub.api.connector.DataConnector;
 import com.tygron.pub.api.connector.DataPackage;
 import com.tygron.pub.api.data.item.Building;
+import com.tygron.pub.api.data.item.Function;
 import com.tygron.pub.api.data.item.Item;
 import com.tygron.pub.api.data.item.Message;
 import com.tygron.pub.api.data.item.Popup;
+import com.tygron.pub.api.data.item.UpgradeType;
 import com.tygron.pub.api.enums.MapLink;
 import com.tygron.pub.api.enums.events.SessionEvent;
 import com.tygron.pub.utils.JsonUtils;
@@ -20,23 +22,6 @@ public class PlayerModule {
 	 */
 	public PlayerModule(DataConnector dataConnector) {
 		setDataConnector(dataConnector);
-	}
-
-	/**
-	 * Retrieve a specific building.
-	 * @param messageID The ID of the building.
-	 * @return The Building.
-	 */
-	public Building buildingGetBuilding(int buildingID) {
-		isPlayerReady();
-
-		DataPackage data = dataConnector.getDataFromServerSession(MapLink.BUILDINGS.itemUrl(buildingID));
-		if (data.getStatusCode() == 500) {
-			return null;
-		}
-		Building building = JsonUtils.mapJsonToType(data.getContent(), Item.get(Building.class));
-
-		return building;
 	}
 
 	/**
@@ -93,11 +78,79 @@ public class PlayerModule {
 	}
 
 	/**
+	 * Plan the upgrade of a building.
+	 * @param upgradeID The id of the upgrade for the building (the building type).
+	 * @param location A multipolygon String.
+	 */
+	public void buildingPlanUpgrade(int upgradeID, Building building) {
+		isPlayerReady();
+
+		sendPlayerEvent(SessionEvent.BUILDING_PLAN_UPGRADE, Integer.toString(upgradeID),
+				building.getPolygons());
+	}
+
+	/**
+	 * Plan the upgrade of a building.
+	 * @param upgradeID The id of the upgrade for the building (the building type).
+	 * @param location A multipolygon String.
+	 */
+	public void buildingPlanUpgrade(int upgradeID, String location) {
+		isPlayerReady();
+
+		sendPlayerEvent(SessionEvent.BUILDING_PLAN_UPGRADE, Integer.toString(upgradeID), location);
+	}
+
+	/**
+	 * Retrieve a specific building.
+	 * @param messageID The ID of the building.
+	 * @return The Building.
+	 */
+	public Building getBuilding(int buildingID) {
+		return itemGetItem(buildingID, MapLink.BUILDINGS, Building.class);
+	}
+
+	/**
+	 * Retrieve a specific function.
+	 * @param messageID The ID of the function.
+	 * @return The Building.
+	 */
+	public Function getFunction(int functionID) {
+		return itemGetItem(functionID, MapLink.FUNCTIONS, Function.class);
+	}
+
+	/**
+	 * Retrieve a specific message.
+	 * @param messageID The ID of the message.
+	 * @return The Message.
+	 */
+	public Message getMessage(int messageID) {
+		return itemGetItem(messageID, MapLink.MESSAGES, Message.class);
+	}
+
+	/**
+	 * Retrieve a specific popup.
+	 * @param messageID The ID of the popup.
+	 * @return The Popup.
+	 */
+	public Popup getPopup(int popupID) {
+		return itemGetItem(popupID, MapLink.POPUPS, Popup.class);
+	}
+
+	/**
 	 * Get the current StakeholderID.
 	 * @return The player's stakeholderID.
 	 */
 	public int getStakeholderID() {
 		return stakeholderID;
+	}
+
+	/**
+	 * Retrieve a specific upgrade type.
+	 * @param messageID The ID of the upgrade.
+	 * @return The Upgrade.
+	 */
+	public UpgradeType getUpgrade(int upgradeID) {
+		return itemGetItem(upgradeID, MapLink.UPGRADE_TYPES, UpgradeType.class);
 	}
 
 	protected boolean isPlayerReady() {
@@ -111,6 +164,18 @@ public class PlayerModule {
 			throw new IllegalStateException("The registered DataConnector is not ready");
 		}
 		return true;
+	}
+
+	private <T extends Item> T itemGetItem(int ID, MapLink maplink, Class<T> itemType) {
+		isPlayerReady();
+
+		DataPackage data = dataConnector.getDataFromServerSession(maplink.itemUrl(ID));
+		if (data.getStatusCode() == 500) {
+			return null;
+		}
+		T item = JsonUtils.mapJsonToType(data.getContent(), Item.get(itemType));
+
+		return item;
 	}
 
 	/**
@@ -132,23 +197,6 @@ public class PlayerModule {
 		isPlayerReady();
 		sendPlayerEvent(SessionEvent.MESSAGE_ANSWER, Integer.toString(message.getID()),
 				Integer.toString(message.getAnswerID(answer)));
-	}
-
-	/**
-	 * Retrieve a specific message.
-	 * @param messageID The ID of the message.
-	 * @return The Message.
-	 */
-	public Message messageGetMessage(int messageID) {
-		isPlayerReady();
-
-		DataPackage data = dataConnector.getDataFromServerSession(MapLink.MESSAGES.itemUrl(messageID));
-		if (data.getStatusCode() == 500) {
-			return null;
-		}
-		Message message = JsonUtils.mapJsonToType(data.getContent(), Item.get(Message.class));
-
-		return message;
 	}
 
 	/**
@@ -188,7 +236,7 @@ public class PlayerModule {
 	 * @param answerID The ID of the answer to give to the popup.
 	 * @param date The date to provide.
 	 */
-	public void popupAnswerPopupDate(int popupID, int answerID, long date) {
+	public void popupAnswerPopupWithDate(int popupID, int answerID, long date) {
 		isPlayerReady();
 		sendPlayerEvent(SessionEvent.POPUP_ANSWER_WITH_DATE, Integer.toString(popupID),
 				Integer.toString(answerID), Long.toString(date));
@@ -204,23 +252,6 @@ public class PlayerModule {
 		isPlayerReady();
 		sendPlayerEvent(SessionEvent.POPUP_ANSWER_WITH_DATE, Integer.toString(popup.getID()),
 				Integer.toString(popup.getAnswerID(answer)), Long.toString(date));
-	}
-
-	/**
-	 * Retrieve a specific popup.
-	 * @param messageID The ID of the popup.
-	 * @return The Popup.
-	 */
-	public Popup popupGetPopup(int popupID) {
-		isPlayerReady();
-
-		DataPackage data = dataConnector.getDataFromServerSession(MapLink.POPUPS.itemUrl(popupID));
-		if (data.getStatusCode() == 500) {
-			return null;
-		}
-		Popup popup = JsonUtils.mapJsonToType(data.getContent(), Item.get(Popup.class));
-
-		return popup;
 	}
 
 	/**
