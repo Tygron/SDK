@@ -21,7 +21,7 @@ public class Building extends Item {
 			DEMOLISH_FINISHED;
 	}
 
-	private int functionTypeID = StringUtils.NOTHING;
+	private int functionID = StringUtils.NOTHING;
 	private int floors = StringUtils.NOTHING;
 	private int ownerID = StringUtils.NOTHING;
 	private String polygons = StringUtils.EMPTY;
@@ -31,8 +31,8 @@ public class Building extends Item {
 		return floors;
 	}
 
-	public int getFunctionTypeID() {
-		return functionTypeID;
+	public int getFunctionID() {
+		return functionID;
 	}
 
 	public int getOwnerID() {

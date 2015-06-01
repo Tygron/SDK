@@ -17,9 +17,10 @@ public class Popup extends Item {
 		}
 	}
 
-	public static enum PopupAnswers {
+	public static enum PopupAnswerSet {
 
 			WAITING_FOR_DATE(
+				true,
 				"yes",
 				"no"),
 			REQUEST_CONSTRUCTION_APPROVAL(
@@ -37,6 +38,7 @@ public class Popup extends Item {
 				"no",
 				"yes"),
 			WAITING_FOR_DATE_UPGRADE(
+				true,
 				// This is not directly linked
 				"confirm",
 				"revert"),
@@ -47,8 +49,14 @@ public class Popup extends Item {
 			CONSTRUCTING;
 
 		private final String[] answers;
+		private boolean requireDate = false;
 
-		private PopupAnswers(String... answers) {
+		private PopupAnswerSet(boolean requireDate, String... answers) {
+			this.requireDate = true;
+			this.answers = answers;
+		}
+
+		private PopupAnswerSet(String... answers) {
 			this.answers = answers;
 		}
 
@@ -68,6 +76,10 @@ public class Popup extends Item {
 				return null;
 			}
 			return answers[0];
+		}
+
+		public boolean requiresDate() {
+			return requireDate;
 		}
 	}
 
@@ -151,6 +163,10 @@ public class Popup extends Item {
 
 	public boolean isVisibleToStakeholder(int stakeholderID) {
 		return Arrays.asList(visibleForActorIDs).contains(stakeholderID);
+	}
+
+	public boolean requiresDate() {
+		return this.getType().equals("INTERACTION_WITH_DATE");
 	}
 
 }

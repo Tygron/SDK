@@ -62,7 +62,7 @@ public class GamePlayUtils {
 				}
 			}
 			if (functionID != StringUtils.NOTHING) {
-				if (!(currentBuilding.getFunctionTypeID() == functionID)) {
+				if (!(currentBuilding.getFunctionID() == functionID)) {
 					continue;
 				}
 			}
@@ -109,9 +109,9 @@ public class GamePlayUtils {
 	}
 
 	public static int[] getFloorRangeForFunction(int functionID, DataConnector dataConnector) {
-		DataPackage data = dataConnector.getDataFromServerSession(MapLink.FUNCTIONS);
+		DataPackage data = dataConnector.getDataFromServerSession(MapLink.FUNCTIONS.itemUrl(functionID));
 		Function function = Item.mapJsonToItem(data.getContent(), Function.class);
-		data = dataConnector.getDataFromServerSession(MapLink.FUNCTIONS);
+		data = dataConnector.getDataFromServerSession(MapLink.FUNCTION_OVERRIDES.itemUrl(functionID));
 		FunctionOverride functionOverride = Item.mapJsonToItem(data.getContent(), FunctionOverride.class);
 
 		return new int[] { function.getFloorsMin(functionOverride), function.getFloorsMax(functionOverride),
