@@ -48,6 +48,36 @@ public class GamePlayUtils {
 		return null;
 	}
 
+	public static Collection<Building> getBuildingDecendents(int parentID, Collection<Building> buildings) {
+		Collection<Building> returnable = new LinkedList<Building>();
+
+		for (Building currentBuilding : buildings) {
+			if (!(currentBuilding.getPredecessorID() == parentID)) {
+				continue;
+			}
+			returnable.add(currentBuilding);
+		}
+		return returnable;
+	}
+
+	public static Collection<Building> getBuildingDecendents(int parentID, DataConnector dataConnector) {
+		Map<Integer, Building> buildings = null;
+		DataPackage data = dataConnector.getDataFromServerSession(MapLink.BUILDINGS);
+
+		try {
+			List<?> buildingsList = JsonUtils.mapJsonToList(data.getContent());
+			buildings = DataUtils.dataListToItemMap((List<Map<String, Map<?, ?>>>) buildingsList,
+					Building.class);
+		} catch (NullPointerException e) {
+			return null;
+		} catch (IllegalArgumentException e) {
+			return null;
+		} catch (ClassCastException e) {
+			return null;
+		}
+		return getBuildingDecendents(parentID, buildings.values());
+	}
+
 	public static Collection<Building> getBuildings(int ownerID, String location, int functionID, int floors,
 			Collection<Building> buildings) {
 		Collection<Building> returnable = new LinkedList<Building>();
