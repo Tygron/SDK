@@ -11,6 +11,7 @@ public class Building extends Item {
 			REQUEST_ZONING_APPROVAL,
 			REQUEST_CONSTRUCTION_APPROVAL,
 			CONSTRUCTION_APPROVED,
+			CONSTRUCTION_DENIED,
 			PENDING_CONSTRUCTION,
 			CONSTRUCTING,
 			READY,
@@ -24,6 +25,7 @@ public class Building extends Item {
 	private int functionID = StringUtils.NOTHING;
 	private int floors = StringUtils.NOTHING;
 	private int ownerID = StringUtils.NOTHING;
+	private int predecessorID = StringUtils.NOTHING;
 	private String polygons = StringUtils.EMPTY;
 	private String state = StringUtils.EMPTY;
 
@@ -41,6 +43,10 @@ public class Building extends Item {
 
 	public String getPolygons() {
 		return polygons;
+	}
+
+	public int getPredecessorID() {
+		return predecessorID;
 	}
 
 	public String getState() {
