@@ -155,6 +155,14 @@ public class DataConnector {
 		return makeRequestToURL(fullURL, RequestType.GET);
 	}
 
+	/**
+	 * Request data from https://www.tygronengine.com/api/slots/X/location/
+	 */
+	public DataPackage getDataFromServerSessionLocation() {
+		String fullURL = createFullURL(StringUtils.URL_SEGMENT_LOCATION, true, true, false, false, false);
+		return makeRequestToURL(fullURL, RequestType.GET);
+	}
+
 	public String getServerAddress() {
 		return this.serverAddress;
 	}
