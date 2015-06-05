@@ -1,7 +1,9 @@
 package com.tygron.pub.examples.utilities;
 
-import java.io.FileInputStream;
 import java.util.Properties;
+import com.tygron.pub.logger.Log;
+import com.tygron.pub.utils.SettingsUtils;
+import com.tygron.pub.utils.StringUtils;
 
 /**
  * This class provides credentials for the examples. It is also possible to create the file
@@ -16,34 +18,31 @@ import java.util.Properties;
 
 public class ExampleSettings {
 
+	public static final String AUTH_FILE = SettingsUtils.DEFAULT_AUTH_FILE;
+
 	public static String SERVER = "https://server2.tygron.com:3020/";
-
 	public static String USERNAME = "";
-
 	public static String PASSWORD = "";
 	public static String CLIENT_ADDRESS = "Unknown IP address";
 
 	public static String CLIENT_NAME = "Example from SDK";
 
 	static {
-		if (USERNAME == null || USERNAME.equals("") || PASSWORD == null || PASSWORD.equals("")
-				|| SERVER == null || SERVER.equals("")) {
-			try {
-				Properties prop = new Properties();
-				FileInputStream in = new FileInputStream("./authentication.properties");
-				prop.load(in);
-				in.close();
+		try {
+			Properties prop = SettingsUtils.loadProperties(AUTH_FILE);
 
-				USERNAME = prop.getProperty("USERNAME", USERNAME);
-				PASSWORD = prop.getProperty("PASSWORD", PASSWORD);
-				SERVER = prop.getProperty("SERVER", SERVER);
+			USERNAME = prop.getProperty("USERNAME", USERNAME);
+			PASSWORD = prop.getProperty("PASSWORD", PASSWORD);
+			SERVER = prop.getProperty("SERVER", SERVER);
 
-			} catch (Exception e) {
-				e.printStackTrace();
-				System.err
-						.println("Failed to load credentials file: authentication.properties, and no credentials in ExampleSettings.");
-				System.exit(-1);
-			}
+		} catch (Exception e) {
+			Log.exception(e, "Credentials not loaded from file.");
+		}
+
+		if (!(StringUtils.isEmpty(SERVER) || StringUtils.isEmpty(USERNAME) || StringUtils.isEmpty(PASSWORD))) {
+			System.err.println("Failed to load credentials file: " + AUTH_FILE + ", and no credentials in "
+					+ ExampleSettings.class.getSimpleName() + ".");
+			System.exit(-1);
 		}
 	}
 }
