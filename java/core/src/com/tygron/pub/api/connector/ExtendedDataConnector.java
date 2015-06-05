@@ -1,6 +1,7 @@
 package com.tygron.pub.api.connector;
 
 import java.rmi.UnexpectedException;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -228,6 +229,36 @@ public class ExtendedDataConnector extends DataConnector {
 	}
 
 	/**
+	 * Retrieve a list of all sessions currently running that can be joined with these credentials.
+	 * @return A list of the currently joinable sessions.
+	 * @throws UnexpectedException When the server responds in an unexpected fashion, this exception is
+	 *             immediately thrown.
+	 */
+	public List<Map<?, ?>> getJoinableSessions(String serverAddress, String username, String password)
+			throws UnexpectedException {
+		parameterCheckCredentials(true, serverAddress, true, username, password);
+
+		if (!(username == null && password == null)) {
+			setUsernameAndPassword(username, password);
+		}
+		if (serverAddress != null) {
+			setServerAddress(serverAddress);
+		}
+
+		List<Map<?, ?>> sessions = new LinkedList<Map<?, ?>>();
+
+		DataPackage data = sendDataToServer(ServerEvent.GET_JOINABLE_SESSIONS);
+
+		try {
+			sessions = (List<Map<?, ?>>) JsonUtils.mapJsonToList(data.getContent());
+		} catch (Exception e) {
+			throw new UnexpectedException("Failed to retrieve joinable sessions.", e);
+		}
+
+		return sessions;
+	}
+
+	/**
 	 * Used to check whether this ExtendedDataConnector is ready to be used as a player.
 	 * @return
 	 */
@@ -281,8 +312,12 @@ public class ExtendedDataConnector extends DataConnector {
 
 		DataPackage data = sendDataToServer(ServerEvent.JOIN_SESSION.url(), serverSlot, clientType,
 				clientAddress, clientName, null);
-
-		JoinSessionObject joinObject = JsonUtils.mapJsonToType(data.getContent(), JoinSessionObject.class);
+		JoinSessionObject joinObject = null;
+		try {
+			joinObject = JsonUtils.mapJsonToType(data.getContent(), JoinSessionObject.class);
+		} catch (IllegalArgumentException e) {
+			return false;
+		}
 
 		setServerToken(joinObject.serverToken);
 		setClientToken(joinObject.client.clientToken);

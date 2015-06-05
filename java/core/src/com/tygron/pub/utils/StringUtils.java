@@ -20,4 +20,17 @@ public class StringUtils {
 
 	public static final String EMPTY = "";
 	public static final int NOTHING = -1;
+
+	public static boolean isEmpty(String string) {
+		return string == null || EMPTY.equals(string);
+	}
+
+	public static boolean isNumeric(String string) {
+		try {
+			Double.parseDouble(string);
+		} catch (NumberFormatException e) {
+			return false;
+		}
+		return true;
+	}
 }

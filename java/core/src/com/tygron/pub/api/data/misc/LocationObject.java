@@ -2,8 +2,10 @@ package com.tygron.pub.api.data.misc;
 
 import java.util.HashMap;
 import java.util.Map;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.tygron.pub.utils.StringUtils;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class LocationObject {
 
 	public String format = StringUtils.EMPTY;

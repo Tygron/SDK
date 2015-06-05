@@ -1,6 +1,7 @@
 package com.tygron.pub.api.connector;
 
 import java.util.Map;
+import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
@@ -12,6 +13,9 @@ import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import com.tygron.pub.api.enums.EventType.ServerEventType;
 import com.tygron.pub.api.enums.EventType.SessionEventType;
 import com.tygron.pub.api.enums.MapLink;
+import com.tygron.pub.exceptions.AuthenticationException;
+import com.tygron.pub.exceptions.NoSuchServerException;
+import com.tygron.pub.exceptions.PageNotFoundException;
 import com.tygron.pub.logger.Log;
 import com.tygron.pub.utils.JsonUtils;
 import com.tygron.pub.utils.StringUtils;
@@ -212,6 +216,8 @@ public class DataConnector {
 			} else {
 				throw new IllegalArgumentException("Unable to parse parameters for request into Json", e);
 			}
+		} catch (ProcessingException e) {
+			throw new NoSuchServerException();
 		}
 
 		return response;
@@ -235,6 +241,14 @@ public class DataConnector {
 
 		if (receivedString == null || StringUtils.EMPTY.equals(receivedString)) {
 			Log.verbose("No contents from request to: " + url);
+		}
+
+		if (statusCode == 401) {
+			throw new AuthenticationException();
+		}
+
+		if (statusCode == 404) {
+			throw new PageNotFoundException();
 		}
 
 		return new DataPackage(receivedString, requestTime, statusCode);

@@ -1,6 +1,7 @@
 package com.tygron.pub.utils;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -15,6 +16,14 @@ import com.tygron.pub.logger.Log;
  *
  */
 public class DataUtils {
+
+	public static <T> List<T> castToItemList(List<Map<?, ?>> list, Class<T> target) {
+		List<T> returnable = new LinkedList<T>();
+		for (Map<?, ?> map : list) {
+			returnable.add(DataUtils.castToItemObject(map, target));
+		}
+		return returnable;
+	}
 
 	public static <T> Map<Integer, T> castToItemMap(Map<Integer, Map<?, ?>> map, Class<T> target) {
 		Map<Integer, T> returnable = new HashMap<Integer, T>();

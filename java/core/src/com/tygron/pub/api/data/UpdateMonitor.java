@@ -363,10 +363,19 @@ public class UpdateMonitor {
 			while (listening && !stopListening) {
 
 				mapLinksForListening.clear();
+
+				List<String> mapLinksOnServer = (List<String>) JsonUtils.mapJsonToList(dataConnector
+						.getDataFromServerSession(StringUtils.EMPTY).getContent());
+
 				synchronized (this.mapLinksToListenTo) {
 					for (String mapLink : this.mapLinksToListenTo) {
-						mapLinksForListening.put(mapLink, getDataMonitor().getVersion(mapLink));
+						if (mapLinksOnServer.contains(mapLink)) {
+							mapLinksForListening.put(mapLink, getDataMonitor().getVersion(mapLink));
+						} else {
+							Log.warning("Maplink " + mapLink + " does not exist on server");
+						}
 					}
+					setMapLinksToListenTo(mapLinksForListening.keySet());
 				}
 
 				if (dataConnector.getServerSlot() == null) {

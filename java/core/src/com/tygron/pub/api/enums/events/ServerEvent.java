@@ -20,7 +20,13 @@ public enum ServerEvent
 		CLOSE_SESSION(
 			"IOServicesEventType/CLOSE_SESSION/"),
 		KILL_SESSION(
-			"IOServicesEventType/KILL_SESSION/");
+			"IOServicesEventType/KILL_SESSION/"),
+
+		GET_MENU_TREE(
+			"IOServicesEventType/GET_MENU_TREE/"),
+
+		GET_JOINABLE_SESSIONS(
+			"IOServicesEventType/GET_JOINABLE_SESSIONS/");
 
 	private final String urlSegment;
 
