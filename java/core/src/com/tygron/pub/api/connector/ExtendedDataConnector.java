@@ -10,6 +10,7 @@ import com.tygron.pub.api.enums.GameMode;
 import com.tygron.pub.api.enums.MapLink;
 import com.tygron.pub.api.enums.events.ServerEvent;
 import com.tygron.pub.api.enums.events.SessionEvent;
+import com.tygron.pub.exceptions.IncompleteResponseException;
 import com.tygron.pub.logger.Log;
 import com.tygron.pub.utils.DataUtils;
 import com.tygron.pub.utils.JsonUtils;
@@ -141,15 +142,27 @@ public class ExtendedDataConnector extends DataConnector {
 		DataPackage data = sendDataToServerSession(SessionEvent.GENERATE_GAME.url(),
 				Double.toString(locationX), Double.toString(locationY));
 
+		boolean fail = false;
+		int runs = 0;
 		int barsTotal;
 		int barsComplete;
 		int barsFailed;
 		int barsCompleteSoFar = 0;
 		do {
+			runs++;
+
+			fail = false;
 			barsTotal = 0;
 			barsComplete = 0;
 			barsFailed = 0;
-			data = getDataFromServerSession(MapLink.PROGRESS);
+			try {
+				data = getDataFromServerSession(MapLink.PROGRESS);
+			} catch (IncompleteResponseException e) {
+				Log.info("run: " + runs);
+				Log.exception(e, "Exception while retrieving progress.");
+				fail = true;
+				continue;
+			}
 
 			Map<Integer, Map<?, ?>> progressMap;
 			try {
@@ -174,7 +187,7 @@ public class ExtendedDataConnector extends DataConnector {
 				Log.verbose("Map generation progress complete: " + barsComplete + "/" + barsTotal);
 				barsCompleteSoFar = barsComplete;
 			}
-		} while (barsTotal > barsComplete);
+		} while (barsTotal > barsComplete || fail);
 
 		return barsFailed;
 	}
