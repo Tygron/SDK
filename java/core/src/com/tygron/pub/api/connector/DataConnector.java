@@ -1,5 +1,6 @@
 package com.tygron.pub.api.connector;
 
+import java.net.SocketException;
 import java.util.Map;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
@@ -14,6 +15,7 @@ import com.tygron.pub.api.enums.EventType.ServerEventType;
 import com.tygron.pub.api.enums.EventType.SessionEventType;
 import com.tygron.pub.api.enums.MapLink;
 import com.tygron.pub.exceptions.AuthenticationException;
+import com.tygron.pub.exceptions.IncompleteResponseException;
 import com.tygron.pub.exceptions.NoSuchServerException;
 import com.tygron.pub.exceptions.PageNotFoundException;
 import com.tygron.pub.logger.Log;
@@ -210,14 +212,18 @@ public class DataConnector {
 					break;
 			}
 		} catch (IllegalArgumentException e) {
-			if (e.getCause() != null) {
-				throw new IllegalArgumentException("Unable to parse parameters for request into Json",
-						e.getCause());
-			} else {
-				throw new IllegalArgumentException("Unable to parse parameters for request into Json", e);
-			}
+			throw new IllegalArgumentException("Unable to parse parameters for request into Json",
+					e.getCause() != null ? e.getCause() : e);
 		} catch (ProcessingException e) {
-			throw new NoSuchServerException();
+			if (e.getCause() instanceof SocketException) {
+				throw new IncompleteResponseException(e.getMessage(), e.getCause());
+			} else if (e.getCause() instanceof IllegalStateException) {
+				throw new NoSuchServerException();
+			} else {
+				throw e;
+			}
+		} catch (Exception e) {
+			throw e;
 		}
 
 		return response;

@@ -9,7 +9,7 @@ public enum SessionEvent
 		SET_MAP_SIZE(
 			"EditorEventType/GENERATE_INITIAL_TILES/"),
 		GENERATE_GAME(
-			"ServerGeoEventType/START_WORLD_CREATION/"),
+			"EditorEventType/START_WORLD_CREATION/"),
 
 		SAVE_PROJECT_INIT(
 			// WARNING: until it's fixed properly: don't use this during single or multiplayer
@@ -18,7 +18,7 @@ public enum SessionEvent
 		STAKEHOLDER_SELECT(
 			"PlayerEventType/STAKEHOLDER_SELECT/"),
 		SETTINGS_ALLOW_GAME_INTERACTION(
-			"SettingsLogicEventType/SETTINGS_ALLOW_GAME_INTERACTION/"),
+			"LogicEventType/SETTINGS_ALLOW_GAME_INTERACTION/"),
 
 		STAKEHOLDER_SET_LOCATION(
 			"PlayerEventType/STAKEHOLDER_SET_LOCATION"),
