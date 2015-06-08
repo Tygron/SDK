@@ -298,6 +298,9 @@ public class UpdateMonitor {
 	 */
 	public void setMapLinksToListenTo(Collection<String> mapLinksToListenTo) {
 		synchronized (this.mapLinksToListenTo) {
+			if (mapLinksToListenTo.equals(this.mapLinksToListenTo)) {
+				return;
+			}
 			this.mapLinksToListenTo.clear();
 			if (mapLinksToListenTo != null) {
 				this.mapLinksToListenTo.addAll(mapLinksToListenTo);
@@ -409,6 +412,10 @@ public class UpdateMonitor {
 						break;
 					case 400:
 						if (!stopListening) {
+							if (data.getContent().equals("CLIENT_RELEASED")) {
+								throw new IllegalStateException(
+										"The client has been released from the session.");
+							}
 							throw new IllegalStateException(
 									"There is a problem with the request. It's possible the ServerToken is no longer valid, the server address has changed or the session has expired.");
 						}
