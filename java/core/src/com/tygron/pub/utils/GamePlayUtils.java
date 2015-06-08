@@ -83,8 +83,10 @@ public class GamePlayUtils {
 		Collection<Building> returnable = new LinkedList<Building>();
 
 		for (Building currentBuilding : buildings) {
-			if (!(currentBuilding.getPolygons().equals(location))) {
-				continue;
+			if (!StringUtils.isEmpty(location)) {
+				if (!(currentBuilding.getPolygons().equals(location))) {
+					continue;
+				}
 			}
 			if (ownerID != StringUtils.NOTHING) {
 				if (!(currentBuilding.getOwnerID() == ownerID)) {
