@@ -286,47 +286,56 @@ public class LoginPane extends GameExplorerSubPane {
 	}
 
 	private void fillProjectsList(Map<String, Collection<String>> projects) {
-		projectBox.getItems().clear();
 
 		List<String> projectNames = new LinkedList<String>();
-		List<String> languages = new LinkedList<String>();
+		// List<String> languages = new LinkedList<String>();
 
 		projectNames.addAll(projects.keySet());
 		java.util.Collections.sort(projectNames);
 
-		for (String project : projectNames) {
-			projectBox.getItems().add(project);
-			/*
-			 * languages.clear(); languages.addAll(projects.get(project)); if (languages.size() <= 1) {
-			 * projectBox.getItems().add(project); continue; } if (languages.size() > 1) {
-			 * java.util.Collections.sort(languages); } for (String language : languages) {
-			 * projectBox.getItems().add(project + " (" + language + ")"); }
-			 */
-		}
-		if (projectBox.getItems().contains(defaultProject)) {
-			Platform.runLater(new Runnable() {
-				@Override
-				public void run() {
+		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				projectBox.getItems().clear();
+				for (String project : projectNames) {
+					projectBox.getItems().add(project);
+
+					// languages.clear();
+					// languages.addAll(projects.get(project));
+					// if (languages.size() <= 1) {
+					// projectBox.getItems().add(project);
+					// continue;
+					// }
+					// if (languages.size() > 1) {
+					// java.util.Collections.sort(languages);
+					// }
+					// for (String language : languages) {
+					// projectBox.getItems().add(project + " (" + language + ")");
+					// }
+
+				}
+				if (projectBox.getItems().contains(defaultProject)) {
 					projectBox.setValue(defaultProject);
 				}
-			});
-		}
+			}
+		});
 	}
 
 	private void fillSessionsList(List<JoinableSessionObject> sessions) {
-		slotBox.getItems().clear();
-		for (JoinableSessionObject session : sessions) {
-			String name = session.getID() + ": " + session.getName() + " (" + session.getLanguage() + ")";
-			slotBox.getItems().add(name);
-		}
-		if (slotBox.getItems().contains(defaultSlot)) {
-			Platform.runLater(new Runnable() {
-				@Override
-				public void run() {
+		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				slotBox.getItems().clear();
+				for (JoinableSessionObject session : sessions) {
+					String name = session.getID() + ": " + session.getName() + " (" + session.getLanguage()
+							+ ")";
+					slotBox.getItems().add(name);
+				}
+				if (slotBox.getItems().contains(defaultSlot)) {
 					slotBox.setValue(defaultSlot);
 				}
-			});
-		}
+			}
+		});
 	}
 
 	public void hideLogin() {
