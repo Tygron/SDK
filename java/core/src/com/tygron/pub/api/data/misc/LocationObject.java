@@ -51,4 +51,8 @@ public class LocationObject {
 	public Double getMinY() {
 		return envelope.get("miny");
 	}
+
+	public boolean isEmpty() {
+		return (getMinX() == 0.0 && getMinY() == 0.0);
+	}
 }
