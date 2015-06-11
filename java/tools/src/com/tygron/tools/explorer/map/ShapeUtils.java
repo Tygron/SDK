@@ -1,4 +1,4 @@
-package com.tygron.tools.explorer.gui.map;
+package com.tygron.tools.explorer.map;
 
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;

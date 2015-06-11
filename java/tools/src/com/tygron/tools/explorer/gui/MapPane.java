@@ -1,17 +1,17 @@
 package com.tygron.tools.explorer.gui;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedList;
+import java.io.File;
 import java.util.Map;
 import javafx.application.Platform;
-import javafx.beans.property.SimpleIntegerProperty;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
+import javafx.print.PrinterJob;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundImage;
 import javafx.scene.layout.BackgroundPosition;
@@ -23,37 +23,35 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Polygon;
-import javafx.scene.shape.Shape;
 import javafx.scene.text.Text;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
+import javax.imageio.ImageIO;
 import com.tygron.pub.api.data.misc.LocationObject;
 import com.tygron.pub.api.enums.MapLink;
 import com.tygron.pub.logger.Log;
 import com.tygron.pub.utils.StringUtils;
 import com.tygron.pub.utils.ValueUtils;
-import com.tygron.tools.explorer.gui.map.ShapeUtils;
 import com.tygron.tools.explorer.logic.ExplorerCommunicator;
+import com.tygron.tools.explorer.map.MapRenderManager;
+import com.tygron.tools.explorer.map.MapRenderManager.RenderManagerListener;
 
-public class MapPane extends GameExplorerSubPane {
+public class MapPane extends GameExplorerSubPane implements RenderManagerListener {
 
-	private static final String POLYGONS = "polygons";
+	private static final int DEFAULT_RENDER_PANE_SIZE = 400;
 
-	private Image mapImage = null;
+	private static final int PAGE_FIT_SIZE = 486;
+
+	private final MapRenderManager renderManager;
+
 	private Text mapLoadingText = new Text("Map is loading, please wait");
 	private Text mapFailedText = new Text("Map has failed to load");
 
 	private VBox verticalPane = new VBox();
+	private Pane mapPaneAndRenderContainer = new Pane();
+	private Pane mapRenderPane = new Pane();
 	private StackPane mapContainer = new StackPane();
 	private Pane map = new Pane();
-	private Pane polygonGroup = new Pane();
-	private Polygon mapSizePolygon = new Polygon();
-
-	private Shape renderedPolygon = null;
-
-	private volatile String currentHashCode = StringUtils.EMPTY;
-	private SimpleIntegerProperty mapSize = new SimpleIntegerProperty();
-
-	private HashMap<String, Collection<Shape>> shapeCache = new HashMap<String, Collection<Shape>>();
 
 	public MapPane(ExplorerCommunicator communicator) {
 		super(communicator);
@@ -67,31 +65,35 @@ public class MapPane extends GameExplorerSubPane {
 		verticalPane.setFillWidth(true);
 		GameExplorerPane.fill(verticalPane, 0.0);
 
-		mapContainer.maxWidthProperty().bind(verticalPane.widthProperty());
-		mapContainer.prefWidthProperty().bind(verticalPane.widthProperty());
-		mapContainer.maxHeightProperty().bind(verticalPane.widthProperty());
-		mapContainer.prefHeightProperty().bind(verticalPane.widthProperty());
-		mapContainer.minHeightProperty().bind(verticalPane.heightProperty().divide(2));
+		mapPaneAndRenderContainer.setMinWidth(0.0);
+		mapPaneAndRenderContainer.setMinHeight(0.0);
+		mapPaneAndRenderContainer.prefWidthProperty().bind(verticalPane.widthProperty());
+		mapPaneAndRenderContainer.maxWidthProperty().bind(verticalPane.widthProperty());
+
+		mapRenderPane.setStyle("-fx-background-color: rgba(128, 128, 128, 1.0);");
 
 		map.prefWidthProperty().bind(map.heightProperty());
 		map.prefHeightProperty().bind(map.widthProperty());
-		map.maxWidthProperty().bind(mapContainer.heightProperty());
-		map.maxHeightProperty().bind(mapContainer.widthProperty());
+		map.maxWidthProperty().bind(map.heightProperty());
+		map.maxHeightProperty().bind(mapContainer.heightProperty());
 
-		polygonGroup.scaleXProperty().bind(map.heightProperty().divide(mapSize));
-		polygonGroup.scaleYProperty().bind(map.heightProperty().divide(mapSize));
-		polygonGroup.layoutXProperty().bind(map.heightProperty().subtract(mapSize).divide(2).subtract(1));
-		polygonGroup.layoutYProperty().bind(polygonGroup.layoutXProperty());
-		polygonGroup.setStyle("-fx-background-color: rgba(0, 0, 0, 0.0);");
+		map.setVisible(false);
 
-		mapSizePolygon.getPoints().addAll(0.0, 0.0, new Double(mapSize.get()), new Double(mapSize.get()));
-		mapSizePolygon.setStroke(Color.TRANSPARENT);
-		mapSizePolygon.setFill(Color.TRANSPARENT);
+		mapContainer.minWidthProperty().bind(verticalPane.widthProperty());
+		mapContainer.maxWidthProperty().bind(verticalPane.widthProperty());
+		mapContainer.prefWidthProperty().bind(verticalPane.widthProperty());
+		mapContainer.maxHeightProperty().bind(verticalPane.widthProperty());
 
-		polygonGroup.getChildren().add(mapSizePolygon);
-		map.getChildren().add(polygonGroup);
+		mapContainer.prefHeightProperty().bind(mapPaneAndRenderContainer.heightProperty());
+		mapContainer.prefWidthProperty().bind(mapPaneAndRenderContainer.widthProperty());
+
 		mapContainer.getChildren().add(map);
-		verticalPane.getChildren().add(mapContainer);
+		mapPaneAndRenderContainer.getChildren().addAll(mapRenderPane, mapContainer);
+		mapContainer.toFront();
+
+		verticalPane.getChildren().add(mapPaneAndRenderContainer);
+
+		this.getChildren().add(verticalPane);
 
 		Pane polygonPane = new Pane();
 		polygonPane.setMinHeight(100.0);
@@ -108,7 +110,10 @@ public class MapPane extends GameExplorerSubPane {
 				Platform.runLater(new Runnable() {
 					@Override
 					public void run() {
-						renderPolygon(polygonField.getText());
+						Log.info("Map width: " + map.getWidth());
+						Log.info("MapContainer width: " + mapContainer.getWidth());
+						Log.info("MapPaneAndRenderContainer width: " + mapPaneAndRenderContainer.getWidth());
+						renderManager.displayUserDefinedPolygon(polygonField.getText());
 					}
 				});
 			}
@@ -120,121 +125,77 @@ public class MapPane extends GameExplorerSubPane {
 		polygonPane.getChildren().add(polygonHBox);
 		verticalPane.getChildren().add(polygonPane);
 
-		this.getChildren().add(verticalPane);
+		Button printButton = new Button("Print");
+		printButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				Platform.runLater(new Runnable() {
+					@Override
+					public void run() {
+						// printMap();
+						saveMap();
+					}
+				});
+			}
+		});
+
+		verticalPane.getChildren().add(printButton);
+
+		renderManager = new MapRenderManager(mapRenderPane);
+		renderManager.addRenderManagerListener(this);
 	}
 
-	public void displayData(final Collection<Shape> shapes) {
-		String hashCode = Integer.toString(shapes.hashCode());
-		currentHashCode = hashCode;
+	private void displayRenderedImage() {
+		displayRenderedImage(null);
+	}
+
+	private void displayRenderedImage(final Image image) {
 
 		Platform.runLater(new Runnable() {
 			@Override
 			public void run() {
-				if (!currentHashCode.equals(hashCode)) {
-					return;
+
+				Image imageToUse = image;
+				long renderStartTime = System.currentTimeMillis();
+				if (imageToUse == null) {
+					imageToUse = renderManager.getRenderedImage();
 				}
-				polygonGroup.getChildren().retainAll(mapSizePolygon);
-				polygonGroup.getChildren().addAll(shapes);
-				if (renderedPolygon != null) {
-					polygonGroup.getChildren().add(renderedPolygon);
-				}
+
+				BackgroundImage backgroundImage = new BackgroundImage(imageToUse, BackgroundRepeat.NO_REPEAT,
+						BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(20, 20,
+								false, false, true, false));
+
+				map.setBackground(new Background(backgroundImage));
+				map.setVisible(true);
+
+				long renderTime = System.currentTimeMillis() - renderStartTime;
+				Log.info("Time between render and display: " + renderTime);
 			}
 		});
 	}
 
-	public void displayData(final Object dataObject) {
-		// shapeCache.clear();
-
-		String hashCode = Integer.toString(dataObject.hashCode());
-		currentHashCode = hashCode;
-
-		if (!(dataObject instanceof Map<?, ?>)) {
-			polygonGroup.getChildren().retainAll(mapSizePolygon, renderedPolygon);
-			return;
-		}
-		polygonGroup.getChildren().retainAll(mapSizePolygon, renderedPolygon);
-
-		Map<String, ? extends Object> data = (Map<String, ? extends Object>) dataObject;
-
-		Thread shapeThread = new Thread() {
-			@Override
-			public void run() {
-				final Collection<Shape> newShapes = new LinkedList<Shape>();
-
-				if (data.containsKey(POLYGONS)) {
-					Shape newShape = ShapeUtils.createPolygon((String) data.get(POLYGONS));
-					if (newShape != null) {
-						newShapes.add(newShape);
-					}
-				} else {
-
-					boolean alertedStatus = false;
-
-					if (!shapeCache.containsKey(hashCode)) {
-						shapeCache.put(hashCode, newShapes);
-
-						for (Object o : data.values()) {
-							if (!(o instanceof Map<?, ?>)) {
-								continue;
-							}
-							Map<?, ?> subMap = (Map<?, ?>) o;
-							if (!subMap.containsKey(POLYGONS)) {
-								continue;
-							}
-							if (!alertedStatus) {
-								getCommunicator().setStatus("Rendering polygons");
-								alertedStatus = true;
-							}
-							Shape polygon = ShapeUtils.createPolygon((String) subMap.get(POLYGONS));
-							if (polygon == null) {
-								continue;
-							}
-							newShapes.add(polygon);
-						}
-						if (alertedStatus) {
-							getCommunicator().setStatus("Done rendering polygons");
-						}
-					} else {
-						newShapes.addAll(shapeCache.get(hashCode));
-					}
-				}
-
-				Platform.runLater(new Runnable() {
-					@Override
-					public void run() {
-						if (!currentHashCode.equals(hashCode)) {
-							return;
-						}
-						polygonGroup.getChildren().retainAll(mapSizePolygon);
-						polygonGroup.getChildren().addAll(newShapes);
-						if (renderedPolygon != null) {
-							polygonGroup.getChildren().add(renderedPolygon);
-						}
-					}
-				});
-			}
-		};
-		shapeThread.setDaemon(true);
-		shapeThread.start();
-	}
-
 	private String generateImageURL() {
-		String baseURL = "http://server.arcgisonline.com/arcgis/rest/services/World_Topo_Map/MapServer/export?bbox=%S%%2C+%S%%2C+%S%%2C+%S&bboxSR=%S&imageSR=&format=png&transparent=false&f=image";
-
 		LocationObject location = getCommunicator().getLocation();
+		if (location.isEmpty()) {
+			return null;
+		}
 
+		String baseURL = "http://server.arcgisonline.com/arcgis/rest/services/World_Topo_Map/MapServer/export?bbox=%S%%2C+%S%%2C+%S%%2C+%S&bboxSR=%S&imageSR=&format=png&transparent=false&f=image";
 		String url = String.format(baseURL, location.getMinX(), location.getMinY(), location.getMaxX(),
 				location.getMaxY(), location.getFormatNumber());
-
 		Log.info("Map: " + url);
 		return url;
 	}
 
 	public void loadMap() {
+		String url = generateImageURL();
+		if (StringUtils.isEmpty(url)) {
+			return;
+		}
+
 		mapContainer.getChildren().add(mapLoadingText);
 
-		String url = generateImageURL();
-		mapImage = new Image(url, true);
+		Image mapImage = new Image(url, true);
 
 		mapFailedText.visibleProperty().bind(mapImage.errorProperty());
 		mapLoadingText.visibleProperty().bind(
@@ -244,29 +205,77 @@ public class MapPane extends GameExplorerSubPane {
 				BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(20, 20, false,
 						false, true, false));
 
-		map.setBackground(new Background(backgroundImage));
+		mapRenderPane.setBackground(new Background(backgroundImage));
+		displayRenderedImage(mapImage);
+	}
+
+	@Override
+	public void processRenderUpdate() {
+		displayRenderedImage();
 	}
 
 	@Override
 	public void processUpdate() {
-		Map<String, ?> mapSizeSetting = (Map<String, ?>) getCommunicator().getData(MapLink.SETTINGS).get(
-				ValueUtils.SETTING_MAP_SIZE);
-		mapSize.set(Integer.parseInt((String) mapSizeSetting.get("value")));
-
-		mapSizePolygon.getPoints().clear();
-		mapSizePolygon.getPoints().addAll(0.0, 0.0, new Double(mapSize.get()), new Double(mapSize.get()));
-		mapSizePolygon.setStrokeWidth(0);
+		retrieveMapSize();
 	}
 
-	private void renderPolygon(String polygonString) {
-		if (renderedPolygon != null) {
-			polygonGroup.getChildren().remove(renderedPolygon);
-		}
+	private void retrieveMapSize() {
+		try {
+			Map<String, ?> mapSizeSetting = (Map<String, ?>) getCommunicator().getData(MapLink.SETTINGS).get(
+					ValueUtils.SETTING_MAP_SIZE);
+			renderManager.setMapSize(Integer.parseInt((String) mapSizeSetting.get("value")));
+		} catch (Exception e) {
+			Log.exception(e, "Failed to load map size.");
+			setStatus("Failed to load map size.");
 
-		renderedPolygon = ShapeUtils.createPolygon(polygonString);
-		if (renderedPolygon != null) {
-			renderedPolygon.setFill(Color.CRIMSON);
-			polygonGroup.getChildren().add(renderedPolygon);
+		}
+	}
+
+	private void saveMap() {
+		int size = renderManager.getMapSize();
+		if (size <= 0) {
+			size = DEFAULT_RENDER_PANE_SIZE;
+			Log.info("Size for saving assumed to " + size);
+		}
+		Image image = renderManager.getRenderedImage(size, renderManager.getMapSize());
+		File file = new File("TestImage.png");
+
+		try {
+			ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", file);
+		} catch (Exception e) {
+			Log.exception(e, "Exception occurred while writing image.");
+		}
+	}
+
+	public void updateDisplayedData(final String mapLink, final Object data) {
+		renderManager.displayData(mapLink, data);
+	}
+
+	private void zzzPrintMap() {
+		int size = renderManager.getMapSize();
+		if (size <= 0) {
+			size = DEFAULT_RENDER_PANE_SIZE;
+			Log.info("Size for printing assumed to " + size);
+		}
+		Image image = renderManager.getRenderedImage(size);
+
+		ImageView imageView = new ImageView(image);
+
+		int targetSize = PAGE_FIT_SIZE;
+
+		imageView.setFitWidth(targetSize);
+		imageView.setFitHeight(targetSize);
+
+		PrinterJob job = PrinterJob.createPrinterJob();
+		boolean showDialog = job.showPageSetupDialog(new Stage(StageStyle.DECORATED));
+		if (showDialog) {
+
+			if (job != null) {
+				boolean success = job.printPage(imageView);
+				if (success) {
+					job.endJob();
+				}
+			}
 		}
 	}
 }

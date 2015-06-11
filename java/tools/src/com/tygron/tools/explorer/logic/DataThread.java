@@ -85,7 +85,10 @@ public class DataThread extends Thread implements UpdateListenerInterface {
 
 	private void displayData() {
 		communicator.setData(updateMonitor.getDataMonitor().getData());
+	}
 
+	private void displayDataUpdate() {
+		communicator.setDataUpdate(updateMonitor.getDataMonitor().getData());
 	}
 
 	private void displayMap() {
@@ -258,7 +261,7 @@ public class DataThread extends Thread implements UpdateListenerInterface {
 	@Override
 	public void update(Map<String, Map<Integer, Map<?, ?>>> items,
 			Map<String, Map<Integer, Map<?, ?>>> deletes) {
-		displayData();
+		displayDataUpdate();
 		// updateMonitor.stopListening();
 		// updateMonitor.removeListener(this);
 	}

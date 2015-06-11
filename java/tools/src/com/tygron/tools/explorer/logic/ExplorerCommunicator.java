@@ -93,22 +93,33 @@ public class ExplorerCommunicator {
 		panes.add(subPane);
 	}
 
-	public void selectData(final Object data) {
+	/**
+	 * The selection of data on the dataPane, to be used in, for example, the mapPane
+	 */
+	public void selectData(final String mapLink, final Object data) {
 		if (mapPane == null) {
 			return;
 		}
-		Platform.runLater(new Runnable() {
-			@Override
-			public void run() {
-				mapPane.displayData(data);
-			}
-		});
+		mapPane.updateDisplayedData(mapLink, data);
+	}
+
+	/**
+	 * The selection of data on the dataPane, to be used in, for example, the mapPane
+	 */
+	public void selectDataByUpdate(final String mapLink, final Object data) {
+		if (mapPane == null) {
+			return;
+		}
+		mapPane.updateDisplayedData(mapLink, data);
 	}
 
 	public void setCredentials(String server, String username, String password) {
 		dataThread.setCredentials(server, username, password);
 	}
 
+	/**
+	 * The first display of data for the dataPane
+	 */
 	public void setData(final Map<String, Map<Integer, Map<?, ?>>> data) {
 		Platform.runLater(new Runnable() {
 			@Override
@@ -117,6 +128,21 @@ public class ExplorerCommunicator {
 					return;
 				}
 				dataPane.displayData(data);
+			}
+		});
+	}
+
+	/**
+	 * The subsequent displays of data for the dataPane
+	 */
+	public void setDataUpdate(final Map<String, Map<Integer, Map<?, ?>>> data) {
+		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				if (dataPane == null) {
+					return;
+				}
+				dataPane.displayDataUpdate(data);
 			}
 		});
 	}

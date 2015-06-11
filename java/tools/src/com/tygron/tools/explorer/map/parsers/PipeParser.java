@@ -1,4 +1,4 @@
-package com.tygron.tools.explorer.gui.map.parsers;
+package com.tygron.tools.explorer.map.parsers;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -11,8 +11,8 @@ import javafx.scene.text.Text;
 import com.tygron.pub.api.enums.MapLink;
 import com.tygron.pub.logger.Log;
 import com.tygron.pub.utils.StringUtils;
-import com.tygron.tools.explorer.gui.map.ShapeUtils;
 import com.tygron.tools.explorer.logic.ExplorerCommunicator;
+import com.tygron.tools.explorer.map.ShapeUtils;
 
 public class PipeParser {
 
