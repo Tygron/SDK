@@ -3,15 +3,13 @@ package com.tygron.tools.explorer.gui;
 import java.io.File;
 import java.util.Map;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.embed.swing.SwingFXUtils;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
-import javafx.print.PrinterJob;
-import javafx.scene.control.Button;
-import javafx.scene.control.TextField;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundImage;
 import javafx.scene.layout.BackgroundPosition;
@@ -24,8 +22,6 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
-import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 import javax.imageio.ImageIO;
 import com.tygron.pub.api.data.misc.LocationObject;
 import com.tygron.pub.api.enums.MapLink;
@@ -35,6 +31,8 @@ import com.tygron.pub.utils.ValueUtils;
 import com.tygron.tools.explorer.logic.ExplorerCommunicator;
 import com.tygron.tools.explorer.map.MapRenderManager;
 import com.tygron.tools.explorer.map.MapRenderManager.RenderManagerListener;
+import com.tygron.tools.explorer.map.parsers.AbstractMapModule;
+import com.tygron.tools.explorer.map.parsers.ImageSaveMapModule;
 
 public class MapPane extends GameExplorerSubPane implements RenderManagerListener {
 
@@ -49,12 +47,20 @@ public class MapPane extends GameExplorerSubPane implements RenderManagerListene
 
 	private VBox verticalPane = new VBox();
 	private Pane mapPaneAndRenderContainer = new Pane();
-	private Pane mapRenderPane = new Pane();
+	private StackPane mapRenderPane = new StackPane();
 	private StackPane mapContainer = new StackPane();
 	private Pane map = new Pane();
 
+	private VBox mapFunctionAndSwitcherContainer = new VBox();
+	private ScrollPane mapFunctionSubPaneContainer = new ScrollPane();
+
 	public MapPane(ExplorerCommunicator communicator) {
 		super(communicator);
+
+		// mapRenderPane.setStyle("-fx-background-color: rgba(128, 128, 128, 1.0);");
+
+		// mapPaneAndRenderContainer.setStyle("-fx-background-color: rgba(128, 0, 0, 1.0);");
+		// mapContainer.setStyle("-fx-background-color: rgba(0, 128, 0, 1.0);");
 
 		mapFailedText.setVisible(false);
 		mapFailedText.setFill(Color.CRIMSON);
@@ -65,27 +71,32 @@ public class MapPane extends GameExplorerSubPane implements RenderManagerListene
 		verticalPane.setFillWidth(true);
 		GameExplorerPane.fill(verticalPane, 0.0);
 
-		mapPaneAndRenderContainer.setMinWidth(0.0);
 		mapPaneAndRenderContainer.setMinHeight(0.0);
-		mapPaneAndRenderContainer.prefWidthProperty().bind(verticalPane.widthProperty());
+		mapPaneAndRenderContainer.prefHeightProperty().bind(
+				verticalPane.heightProperty().subtract(mapFunctionAndSwitcherContainer.heightProperty()));
+		mapPaneAndRenderContainer.maxHeightProperty().bind(
+				verticalPane.heightProperty().subtract(mapFunctionAndSwitcherContainer.heightProperty()));
+
+		mapPaneAndRenderContainer.minWidthProperty().bind(verticalPane.widthProperty());
 		mapPaneAndRenderContainer.maxWidthProperty().bind(verticalPane.widthProperty());
 
-		mapRenderPane.setStyle("-fx-background-color: rgba(128, 128, 128, 1.0);");
-
-		map.prefWidthProperty().bind(map.heightProperty());
-		map.prefHeightProperty().bind(map.widthProperty());
-		map.maxWidthProperty().bind(map.heightProperty());
-		map.maxHeightProperty().bind(mapContainer.heightProperty());
+		map.setMinWidth(0.0);
+		map.prefWidthProperty().bind(mapContainer.heightProperty());
+		map.maxWidthProperty().bind(mapContainer.heightProperty());
+		map.setMinHeight(0.0);
+		map.prefHeightProperty().bind(mapContainer.widthProperty());
+		map.maxHeightProperty().bind(mapContainer.widthProperty());
 
 		map.setVisible(false);
 
 		mapContainer.minWidthProperty().bind(verticalPane.widthProperty());
-		mapContainer.maxWidthProperty().bind(verticalPane.widthProperty());
 		mapContainer.prefWidthProperty().bind(verticalPane.widthProperty());
-		mapContainer.maxHeightProperty().bind(verticalPane.widthProperty());
+		mapContainer.maxWidthProperty().bind(verticalPane.widthProperty());
 
-		mapContainer.prefHeightProperty().bind(mapPaneAndRenderContainer.heightProperty());
-		mapContainer.prefWidthProperty().bind(mapPaneAndRenderContainer.widthProperty());
+		mapContainer.prefHeightProperty().bind(
+				verticalPane.heightProperty().subtract(mapFunctionAndSwitcherContainer.heightProperty()));
+		mapContainer.maxHeightProperty().bind(
+				verticalPane.heightProperty().subtract(mapFunctionAndSwitcherContainer.heightProperty()));
 
 		mapContainer.getChildren().add(map);
 		mapPaneAndRenderContainer.getChildren().addAll(mapRenderPane, mapContainer);
@@ -95,54 +106,57 @@ public class MapPane extends GameExplorerSubPane implements RenderManagerListene
 
 		this.getChildren().add(verticalPane);
 
-		Pane polygonPane = new Pane();
-		polygonPane.setMinHeight(100.0);
-		polygonPane.setPrefHeight(100.0);
+		mapFunctionAndSwitcherContainer.setMinHeight(200.0);
+		mapFunctionAndSwitcherContainer.setPrefHeight(200.0);
+		mapFunctionAndSwitcherContainer.setFillWidth(true);
 
-		HBox polygonHBox = new HBox();
-		Text polygonText = new Text("Polygon: ");
-		TextField polygonField = new TextField();
-		HBox.setHgrow(polygonField, Priority.ALWAYS);
-		Button polygonButton = new Button("Render");
-		polygonButton.setOnAction(new EventHandler<ActionEvent>() {
+		HBox mapFunctionSelectionPane = new HBox();
+		VBox.setVgrow(mapFunctionSelectionPane, Priority.NEVER);
+		mapFunctionSelectionPane.setPadding(new Insets(10, 10, 10, 10));
+		mapFunctionSelectionPane.minWidthProperty().bind(verticalPane.widthProperty());
+		mapFunctionSelectionPane.maxWidthProperty().bind(verticalPane.widthProperty());
+		Text functionSelectionText = new Text("Mode: ");
+		HBox.setHgrow(functionSelectionText, Priority.NEVER);
+		ComboBox<ImageSaveMapModule> modeSelectionBox = new ComboBox<ImageSaveMapModule>();
+		HBox.setHgrow(modeSelectionBox, Priority.ALWAYS);
+		mapFunctionSelectionPane.getChildren().addAll(functionSelectionText, modeSelectionBox);
+
+		// mapFunctionSubPaneContainer.setStyle("-fx-background-color: rgba(0, 128, 0, 1.0);");
+
+		VBox.setVgrow(mapFunctionSubPaneContainer, Priority.ALWAYS);
+		mapFunctionSubPaneContainer.setFitToHeight(true);
+		mapFunctionSubPaneContainer.setFitToWidth(true);
+
+		mapFunctionAndSwitcherContainer.getChildren().addAll(mapFunctionSelectionPane,
+				mapFunctionSubPaneContainer);
+
+		modeSelectionBox.getItems().add(new ImageSaveMapModule());
+
+		modeSelectionBox.valueProperty().addListener(new ChangeListener<AbstractMapModule>() {
 			@Override
-			public void handle(ActionEvent event) {
-				Platform.runLater(new Runnable() {
-					@Override
-					public void run() {
-						Log.info("Map width: " + map.getWidth());
-						Log.info("MapContainer width: " + mapContainer.getWidth());
-						Log.info("MapPaneAndRenderContainer width: " + mapPaneAndRenderContainer.getWidth());
-						renderManager.displayUserDefinedPolygon(polygonField.getText());
-					}
-				});
+			public void changed(ObservableValue<? extends AbstractMapModule> ov, AbstractMapModule oldValue,
+					AbstractMapModule newValue) {
+				if (oldValue != null) {
+					oldValue.unload();
+				}
+
+				mapFunctionSubPaneContainer.setContent(newValue.getPane());
+
+				if (newValue != null) {
+					newValue.load();
+				}
 			}
 		});
-		polygonHBox.setPadding(new Insets(25, 25, 25, 25));
 
-		polygonHBox.prefWidthProperty().bind(polygonPane.widthProperty());
-		polygonHBox.getChildren().addAll(polygonText, polygonField, polygonButton);
-		polygonPane.getChildren().add(polygonHBox);
-		verticalPane.getChildren().add(polygonPane);
-
-		Button printButton = new Button("Print");
-		printButton.setOnAction(new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent event) {
-				Platform.runLater(new Runnable() {
-					@Override
-					public void run() {
-						// printMap();
-						saveMap();
-					}
-				});
-			}
-		});
-
-		verticalPane.getChildren().add(printButton);
+		verticalPane.getChildren().add(mapFunctionAndSwitcherContainer);
 
 		renderManager = new MapRenderManager(mapRenderPane);
 		renderManager.addRenderManagerListener(this);
+
+		for (AbstractMapModule module : modeSelectionBox.getItems()) {
+			module.setMapPane(this);
+			module.setRenderManager(this.renderManager);
+		}
 	}
 
 	private void displayRenderedImage() {
@@ -237,7 +251,7 @@ public class MapPane extends GameExplorerSubPane implements RenderManagerListene
 			size = DEFAULT_RENDER_PANE_SIZE;
 			Log.info("Size for saving assumed to " + size);
 		}
-		Image image = renderManager.getRenderedImage(size, renderManager.getMapSize());
+		Image image = renderManager.getRenderedImage(size);
 		File file = new File("TestImage.png");
 
 		try {
@@ -249,33 +263,5 @@ public class MapPane extends GameExplorerSubPane implements RenderManagerListene
 
 	public void updateDisplayedData(final String mapLink, final Object data) {
 		renderManager.displayData(mapLink, data);
-	}
-
-	private void zzzPrintMap() {
-		int size = renderManager.getMapSize();
-		if (size <= 0) {
-			size = DEFAULT_RENDER_PANE_SIZE;
-			Log.info("Size for printing assumed to " + size);
-		}
-		Image image = renderManager.getRenderedImage(size);
-
-		ImageView imageView = new ImageView(image);
-
-		int targetSize = PAGE_FIT_SIZE;
-
-		imageView.setFitWidth(targetSize);
-		imageView.setFitHeight(targetSize);
-
-		PrinterJob job = PrinterJob.createPrinterJob();
-		boolean showDialog = job.showPageSetupDialog(new Stage(StageStyle.DECORATED));
-		if (showDialog) {
-
-			if (job != null) {
-				boolean success = job.printPage(imageView);
-				if (success) {
-					job.endJob();
-				}
-			}
-		}
 	}
 }

@@ -14,6 +14,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Shape;
+import javafx.scene.transform.Scale;
 import javafx.scene.transform.Transform;
 import com.tygron.pub.logger.Log;
 import com.tygron.pub.utils.StringUtils;
@@ -30,8 +31,8 @@ public class MapRenderManager {
 	private final Pane mapRenderPane;
 
 	private SimpleIntegerProperty mapSize = new SimpleIntegerProperty();
-	private Pane dataPolygonGroup = new Pane();
 
+	private Pane dataPolygonGroup = new Pane();
 	private Pane definedPolygonGroup = new Pane();
 
 	private HashMap<String, Collection<Shape>> shapeCache = new HashMap<String, Collection<Shape>>();
@@ -50,15 +51,16 @@ public class MapRenderManager {
 	}
 
 	private void addPolygonGroupToRenderPane(Pane polygonGroup) {
-		polygonGroup.scaleXProperty().bind(mapRenderPane.heightProperty().divide(mapSize));
-		polygonGroup.scaleYProperty().bind(mapRenderPane.widthProperty().divide(mapSize));
+		resetPolygonGroup(polygonGroup);
 
-		polygonGroup.layoutXProperty().bind(
-				mapRenderPane.widthProperty().subtract(mapSize).divide(2).subtract(1));
-		polygonGroup.layoutYProperty().bind(polygonGroup.layoutXProperty());
+		Scale scale = new Scale();
+		scale.setPivotX(0.0);
+		scale.setPivotY(0.0);
+		scale.xProperty().bind(mapRenderPane.widthProperty().divide(mapSize));
+		scale.yProperty().bind(mapRenderPane.heightProperty().divide(mapSize));
+		polygonGroup.getTransforms().add(scale);
 
 		polygonGroup.setStyle("-fx-background-color: rgba(0, 0, 0, 0.0);");
-		resetPolygonGroup(polygonGroup);
 
 		polygonGroup.visibleProperty().bind(this.mapSize.greaterThan(0));
 		mapRenderPane.getChildren().add(polygonGroup);
@@ -80,6 +82,10 @@ public class MapRenderManager {
 		}
 	}
 
+	private void alertRenderedImage() {
+		alertListeners();
+	}
+
 	private boolean cacheIsCurrent(final String mapLink, final String hashCode) {
 		if (StringUtils.isEmpty(hashCode) || StringUtils.isEmpty(mapLink)) {
 			return false;
@@ -99,23 +105,17 @@ public class MapRenderManager {
 	}
 
 	private Image createImageOfRenderedMap(int imageSize) {
-		double renderMapSize = getRenderPaneSize();
-		Log.info("Creating image of rendered map of size: " + imageSize + ", with rendered map at size "
-				+ renderMapSize);
+		double renderMapSize = getRenderSize();
 
 		WritableImage writableImage = new WritableImage(imageSize, imageSize);
 		SnapshotParameters parameters = new SnapshotParameters();
 		parameters.setTransform(Transform.scale((imageSize / renderMapSize), imageSize / renderMapSize));
 		parameters.setViewport(new Rectangle2D(-imageSize, -imageSize, renderMapSize, renderMapSize));
 
-		return mapRenderPane.snapshot(parameters, writableImage);
-	}
+		Image image = mapRenderPane.snapshot(parameters, writableImage);
+		Log.info("Creating image of rendered map of size: " + imageSize + ", with rendered map at size "
+				+ getRenderSize());
 
-	private Image createImageOfRenderedMap(int imageSize, int renderSize) {
-		double renderPaneSize = getRenderPaneSize();
-		setRenderSize(renderSize);
-		Image image = createImageOfRenderedMap(imageSize);
-		setRenderSize(renderPaneSize);
 		return image;
 	}
 
@@ -200,7 +200,7 @@ public class MapRenderManager {
 			definedPolygonGroup.getChildren().add(renderedPolygon);
 		}
 
-		showRenderedImage();
+		alertRenderedImage();
 	}
 
 	private String generateHash(final Object data) {
@@ -212,22 +212,14 @@ public class MapRenderManager {
 	}
 
 	public Image getRenderedImage() {
-		return createImageOfRenderedMap((int) getRenderPaneSize());
+		return createImageOfRenderedMap((int) getRenderSize());
 	}
 
 	public Image getRenderedImage(int imageSize) {
 		return createImageOfRenderedMap(imageSize);
 	}
 
-	public Image getRenderedImage(int imageSize, int renderSize) {
-		return createImageOfRenderedMap(imageSize, renderSize);
-	}
-
-	public double getRenderPaneSize() {
-		return mapRenderPane.getWidth();
-	}
-
-	private double getRenderSize() {
+	public double getRenderSize() {
 		return mapRenderPane.getWidth();
 	}
 
@@ -242,6 +234,12 @@ public class MapRenderManager {
 		if (hashCode != null && polygonGroup != null) {
 			activeHash.put(polygonGroup, hashCode);
 		}
+	}
+
+	private void removePolygonGroupFromRenderPane(Pane polygonGroup) {
+		mapRenderPane.getChildren().remove(polygonGroup);
+		polygonGroup.getTransforms().clear();
+		polygonGroup.visibleProperty().unbind();
 	}
 
 	public void removeRenderManagerListener(RenderManagerListener listener) {
@@ -266,7 +264,7 @@ public class MapRenderManager {
 
 				resetPolygonGroup(polygonGroup);
 				polygonGroup.getChildren().addAll(shapes);
-				showRenderedImage();
+				alertRenderedImage();
 			}
 		});
 	}
@@ -293,7 +291,7 @@ public class MapRenderManager {
 
 	public void setMapSize(int mapSize) {
 		this.mapSize.set(mapSize);
-		setRenderSize(this.mapSize.get());
+		setRenderSize(mapSize);
 	}
 
 	private void setRenderSize(double newSize) {
@@ -302,9 +300,5 @@ public class MapRenderManager {
 		mapRenderPane.setMaxSize(newSize, newSize);
 		mapRenderPane.layoutXProperty().bind(mapRenderPane.widthProperty().multiply(-1));
 		mapRenderPane.layoutYProperty().bind(mapRenderPane.heightProperty().multiply(-1));
-	}
-
-	private void showRenderedImage() {
-		alertListeners();
 	}
 }
