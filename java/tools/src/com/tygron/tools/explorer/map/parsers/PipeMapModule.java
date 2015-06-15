@@ -243,8 +243,21 @@ public class PipeMapModule extends AbstractMapModule {
 
 			}
 		});
+		Button clear = new Button("Clear");
+		clear.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				Platform.runLater(new Runnable() {
+					@Override
+					public void run() {
+						getRenderManager().displayUserDefinedPolygon((Collection<Shape>) null);
+					}
+				});
+			}
+		});
 
 		settingsPane.add(render, 0, 1);
+		settingsPane.add(clear, 0, 2);
 
 		verticalBox.getChildren().addAll(settingsPane);
 		pane.getChildren().add(verticalBox);

@@ -194,7 +194,9 @@ public class MapRenderManager {
 
 	public void displayUserDefinedPolygon(Collection<Shape> shapes) {
 		resetPolygonGroup(definedPolygonGroup);
-		definedPolygonGroup.getChildren().addAll(shapes);
+		if (shapes != null) {
+			definedPolygonGroup.getChildren().addAll(shapes);
+		}
 		alertRenderedImage();
 	}
 
