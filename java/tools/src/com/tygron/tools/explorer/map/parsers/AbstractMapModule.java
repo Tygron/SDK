@@ -1,16 +1,16 @@
 package com.tygron.tools.explorer.map.parsers;
 
-import com.tygron.tools.explorer.gui.MapPane;
 import com.tygron.tools.explorer.gui.MapPaneSubPane;
+import com.tygron.tools.explorer.logic.ExplorerCommunicator;
 import com.tygron.tools.explorer.map.MapRenderManager;
 
 public abstract class AbstractMapModule {
 
 	private MapRenderManager renderManager;
-	private MapPane mapPane;
+	private ExplorerCommunicator communicator;
 
-	public final MapPane getMapPane() {
-		return mapPane;
+	public final ExplorerCommunicator getCommunicator() {
+		return this.communicator;
 	}
 
 	public abstract String getName();
@@ -21,12 +21,16 @@ public abstract class AbstractMapModule {
 		return this.renderManager;
 	}
 
+	public boolean isFunctional() {
+		return true;
+	}
+
 	public void load() {
 
 	}
 
-	public final void setMapPane(MapPane mapPane) {
-		this.mapPane = mapPane;
+	public final void setCommunicator(ExplorerCommunicator communicator) {
+		this.communicator = communicator;
 	}
 
 	public final void setRenderManager(MapRenderManager renderManager) {
@@ -34,7 +38,7 @@ public abstract class AbstractMapModule {
 	}
 
 	protected void setStatus(String state) {
-		mapPane.setStatus(state);
+		communicator.setStatus(state);
 	}
 
 	@Override

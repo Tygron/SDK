@@ -192,6 +192,12 @@ public class MapRenderManager {
 		shapeThread.setDaemon(true);
 	}
 
+	public void displayUserDefinedPolygon(Collection<Shape> shapes) {
+		resetPolygonGroup(definedPolygonGroup);
+		definedPolygonGroup.getChildren().addAll(shapes);
+		alertRenderedImage();
+	}
+
 	public void displayUserDefinedPolygon(String polygonString) {
 		resetPolygonGroup(definedPolygonGroup);
 		Shape renderedPolygon = ShapeUtils.createPolygon(polygonString);

@@ -86,8 +86,8 @@ public class ShapeUtils {
 			}
 		}
 		if (mainShape != null) {
-			mainShape.setFill(Color.CYAN);
-			// mainShape.setFill(Color.TRANSPARENT);
+			// mainShape.setFill(Color.CYAN);
+			mainShape.setFill(Color.TRANSPARENT);
 			mainShape.setStroke(Color.BLACK);
 		}
 

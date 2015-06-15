@@ -1,6 +1,8 @@
 package com.tygron.tools.explorer.gui;
 
 import java.io.File;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -33,6 +35,7 @@ import com.tygron.tools.explorer.map.MapRenderManager;
 import com.tygron.tools.explorer.map.MapRenderManager.RenderManagerListener;
 import com.tygron.tools.explorer.map.parsers.AbstractMapModule;
 import com.tygron.tools.explorer.map.parsers.ImageSaveMapModule;
+import com.tygron.tools.explorer.map.parsers.PipeMapModule;
 
 public class MapPane extends GameExplorerSubPane implements RenderManagerListener {
 
@@ -50,6 +53,8 @@ public class MapPane extends GameExplorerSubPane implements RenderManagerListene
 	private StackPane mapRenderPane = new StackPane();
 	private StackPane mapContainer = new StackPane();
 	private Pane map = new Pane();
+
+	private ComboBox<AbstractMapModule> modeSelectionBox = new ComboBox<AbstractMapModule>();
 
 	private VBox mapFunctionAndSwitcherContainer = new VBox();
 	private ScrollPane mapFunctionSubPaneContainer = new ScrollPane();
@@ -117,7 +122,7 @@ public class MapPane extends GameExplorerSubPane implements RenderManagerListene
 		mapFunctionSelectionPane.maxWidthProperty().bind(verticalPane.widthProperty());
 		Text functionSelectionText = new Text("Mode: ");
 		HBox.setHgrow(functionSelectionText, Priority.NEVER);
-		ComboBox<ImageSaveMapModule> modeSelectionBox = new ComboBox<ImageSaveMapModule>();
+
 		HBox.setHgrow(modeSelectionBox, Priority.ALWAYS);
 		mapFunctionSelectionPane.getChildren().addAll(functionSelectionText, modeSelectionBox);
 
@@ -130,7 +135,7 @@ public class MapPane extends GameExplorerSubPane implements RenderManagerListene
 		mapFunctionAndSwitcherContainer.getChildren().addAll(mapFunctionSelectionPane,
 				mapFunctionSubPaneContainer);
 
-		modeSelectionBox.getItems().add(new ImageSaveMapModule());
+		// modeSelectionBox.getItems().addAll(new ImageSaveMapModule(), new PipeMapModule());
 
 		modeSelectionBox.valueProperty().addListener(new ChangeListener<AbstractMapModule>() {
 			@Override
@@ -154,7 +159,7 @@ public class MapPane extends GameExplorerSubPane implements RenderManagerListene
 		renderManager.addRenderManagerListener(this);
 
 		for (AbstractMapModule module : modeSelectionBox.getItems()) {
-			module.setMapPane(this);
+			module.setCommunicator(getCommunicator());
 			module.setRenderManager(this.renderManager);
 		}
 	}
@@ -223,6 +228,22 @@ public class MapPane extends GameExplorerSubPane implements RenderManagerListene
 		displayRenderedImage(mapImage);
 	}
 
+	private List<AbstractMapModule> loadModules() {
+		final List<AbstractMapModule> modules = new LinkedList<AbstractMapModule>();
+		modules.add(new ImageSaveMapModule());
+		modules.add(new PipeMapModule());
+
+		for (AbstractMapModule module : modules) {
+			module.setCommunicator(getCommunicator());
+			module.setRenderManager(this.renderManager);
+			if (!module.isFunctional()) {
+				modules.remove(module);
+			}
+		}
+
+		return modules;
+	}
+
 	@Override
 	public void processRenderUpdate() {
 		displayRenderedImage();
@@ -231,6 +252,15 @@ public class MapPane extends GameExplorerSubPane implements RenderManagerListene
 	@Override
 	public void processUpdate() {
 		retrieveMapSize();
+
+		final List<AbstractMapModule> modules = loadModules();
+
+		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				modeSelectionBox.getItems().addAll(modules);
+			}
+		});
 	}
 
 	private void retrieveMapSize() {
