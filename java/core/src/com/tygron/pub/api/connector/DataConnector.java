@@ -2,6 +2,8 @@ package com.tygron.pub.api.connector;
 
 import java.net.SocketException;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -43,6 +45,8 @@ public class DataConnector {
 
 	private String serverSlot = null;
 	private String serverAddress = null;
+
+	private int autoRetryOnIncompleteResponse = 3;
 
 	/**
 	 * Create a new DataConnector, without any preset server or authentication information.
@@ -125,6 +129,10 @@ public class DataConnector {
 		this.clientToken = dataConnector.clientToken;
 		this.serverSlot = dataConnector.serverSlot;
 		this.serverAddress = dataConnector.serverAddress;
+	}
+
+	public int getAutoRetryAttempts() {
+		return this.autoRetryOnIncompleteResponse;
 	}
 
 	public String getClientToken() {
@@ -235,11 +243,20 @@ public class DataConnector {
 		long requestTime = StringUtils.NOTHING;
 		int statusCode = StringUtils.NOTHING;
 
-		requestTime = System.currentTimeMillis();
-		Response response = makeRequest(url, requestType, params); // javax.ws.rs.ProcessingException:
-																	// java.net.SocketException: Unexpected
-																	// end of file from server
-		requestTime = System.currentTimeMillis() - requestTime;
+		Response response = null;
+
+		for (int i = autoRetryOnIncompleteResponse; i >= 0; i++) {
+			try {
+				requestTime = System.currentTimeMillis();
+				response = makeRequest(url, requestType, params);
+				requestTime = System.currentTimeMillis() - requestTime;
+				break;
+			} catch (IncompleteResponseException e) {
+				if (i == 0) {
+					throw e;
+				}
+			}
+		}
 
 		statusCode = response.getStatus();
 		receivedString = response.readEntity(String.class);
@@ -313,6 +330,10 @@ public class DataConnector {
 		return makeRequestToURL(fullURL, RequestType.POST, params);
 	}
 
+	public void setAutoRetryAttempts(int attempts) {
+		this.autoRetryOnIncompleteResponse = Math.max(0, attempts);
+	}
+
 	public void setClientToken(final String clientToken) {
 		this.clientToken = clientToken;
 	}
@@ -321,6 +342,10 @@ public class DataConnector {
 		if (this.username != null && this.password != null) {
 			builder.property(HttpAuthenticationFeature.HTTP_AUTHENTICATION_BASIC_USERNAME, username);
 			builder.property(HttpAuthenticationFeature.HTTP_AUTHENTICATION_BASIC_PASSWORD, password);
+		} else {
+			Log.verbose("Username or password are not set");
+			builder.property(HttpAuthenticationFeature.HTTP_AUTHENTICATION_BASIC_USERNAME, " ");
+			builder.property(HttpAuthenticationFeature.HTTP_AUTHENTICATION_BASIC_PASSWORD, " ");
 		}
 
 		if (this.serverToken != null) {
@@ -361,6 +386,32 @@ public class DataConnector {
 
 	public void setServerToken(final String serverToken) {
 		this.serverToken = serverToken;
+	}
+
+	public void setSlotAddress(String slotAddress) {
+		// https://server2.tygron.com:3020/api/slots/0
+		String serverAddress = StringUtils.EMPTY;
+		String serverSlot = StringUtils.EMPTY;
+
+		try {
+
+			serverAddress = slotAddress.split("(" + StringUtils.URL_SEGMENT_API + ")")[0];
+
+			Matcher matcher = Pattern.compile(
+					StringUtils.URL_DELIMITER + "([0-9]+)" + StringUtils.URL_DELIMITER).matcher(slotAddress);
+			matcher.find();
+			serverSlot = matcher.group(1);
+		} catch (Exception e) {
+			throw new IllegalArgumentException(
+					"Failed to parse slot address into server address and slot number.", e);
+		}
+		if (StringUtils.isEmpty(serverAddress) || StringUtils.isEmpty(serverSlot)) {
+			throw new IllegalArgumentException(
+					"Provided slot address did not contain server address and slot number");
+		}
+
+		setServerAddress(serverAddress);
+		setServerSlot(serverSlot);
 	}
 
 	public void setUsernameAndPassword(final String username, final String password)

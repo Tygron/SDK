@@ -425,6 +425,15 @@ public class ExtendedDataConnector extends DataConnector {
 	}
 
 	/**
+	 * Release a stakeholder from the session
+	 * @param stakeholderID The ID of the stakeholder to release from the session.
+	 */
+	public void stakeholderRelease(int stakeholderID) {
+		parameterCheckDetails(true, true, false);
+		sendDataToServerSession(SessionEvent.STAKEHOLDER_RELEASE.url(), Integer.toString(stakeholderID));
+	}
+
+	/**
 	 * Start a session on the server, and connect to it.
 	 * @param serverAddress The address for the server.
 	 * @param username The username to use to authenticate.

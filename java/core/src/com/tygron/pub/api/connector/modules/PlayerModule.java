@@ -3,17 +3,14 @@ package com.tygron.pub.api.connector.modules;
 import com.tygron.pub.api.connector.DataConnector;
 import com.tygron.pub.api.connector.DataPackage;
 import com.tygron.pub.api.data.item.Building;
-import com.tygron.pub.api.data.item.Function;
-import com.tygron.pub.api.data.item.Item;
 import com.tygron.pub.api.data.item.Message;
 import com.tygron.pub.api.data.item.Popup;
 import com.tygron.pub.api.data.item.UpgradeType;
 import com.tygron.pub.api.enums.MapLink;
 import com.tygron.pub.api.enums.events.SessionEvent;
-import com.tygron.pub.utils.JsonUtils;
 import com.tygron.pub.utils.StringUtils;
 
-public class PlayerModule {
+public class PlayerModule extends DataModule {
 	private DataConnector dataConnector = null;
 	private int stakeholderID = StringUtils.NOTHING;
 
@@ -21,7 +18,7 @@ public class PlayerModule {
 	 * Create a new PlayerModule, and immediately link it to a DataConnector.
 	 */
 	public PlayerModule(DataConnector dataConnector) {
-		setDataConnector(dataConnector);
+		super(dataConnector);
 	}
 
 	/**
@@ -78,6 +75,16 @@ public class PlayerModule {
 	}
 
 	/**
+	 * Plan the revertion of actions in an area.
+	 * @param locationString A multipolygon description indicating the location to revert.
+	 */
+	public void buildingPlanRevert(String locationString) {
+		isPlayerReady();
+
+		sendPlayerEvent(SessionEvent.BUILDING_REVERT_COORDINATES, locationString);
+	}
+
+	/**
 	 * Plan the upgrade of a building.
 	 * @param upgradeID The id of the upgrade for the building (the building type).
 	 * @param location A multipolygon String.
@@ -98,42 +105,6 @@ public class PlayerModule {
 		isPlayerReady();
 
 		sendPlayerEvent(SessionEvent.BUILDING_PLAN_UPGRADE, Integer.toString(upgradeID), location);
-	}
-
-	/**
-	 * Retrieve a specific building.
-	 * @param messageID The ID of the building.
-	 * @return The Building.
-	 */
-	public Building getBuilding(int buildingID) {
-		return itemGetItem(buildingID, MapLink.BUILDINGS, Building.class);
-	}
-
-	/**
-	 * Retrieve a specific function.
-	 * @param messageID The ID of the function.
-	 * @return The Building.
-	 */
-	public Function getFunction(int functionID) {
-		return itemGetItem(functionID, MapLink.FUNCTIONS, Function.class);
-	}
-
-	/**
-	 * Retrieve a specific message.
-	 * @param messageID The ID of the message.
-	 * @return The Message.
-	 */
-	public Message getMessage(int messageID) {
-		return itemGetItem(messageID, MapLink.MESSAGES, Message.class);
-	}
-
-	/**
-	 * Retrieve a specific popup.
-	 * @param messageID The ID of the popup.
-	 * @return The Popup.
-	 */
-	public Popup getPopup(int popupID) {
-		return itemGetItem(popupID, MapLink.POPUPS, Popup.class);
 	}
 
 	/**
@@ -158,24 +129,11 @@ public class PlayerModule {
 	}
 
 	protected boolean isPlayerReady(boolean stakeholder) {
-		if (dataConnector == null || dataConnector.getServerSlot() == null
-				|| dataConnector.getServerToken() == null || dataConnector.getClientToken() == null
+		if ((!isModuleReady()) || dataConnector.getClientToken() == null
 				|| (stakeholder && stakeholderID == StringUtils.NOTHING)) {
 			throw new IllegalStateException("The registered DataConnector is not ready");
 		}
 		return true;
-	}
-
-	private <T extends Item> T itemGetItem(int ID, MapLink maplink, Class<T> itemType) {
-		isPlayerReady();
-
-		DataPackage data = dataConnector.getDataFromServerSession(maplink.itemUrl(ID));
-		if (data.getStatusCode() == 500) {
-			return null;
-		}
-		T item = JsonUtils.mapJsonToType(data.getContent(), Item.get(itemType));
-
-		return item;
 	}
 
 	/**
@@ -205,6 +163,7 @@ public class PlayerModule {
 	 * @param y The Y coordinate
 	 */
 	public void ping(int x, int y) {
+		isPlayerReady();
 		sendPlayerEvent(SessionEvent.STAKEHOLDER_SET_LOCATION, "POINT (" + Integer.toString(x) + " "
 				+ Integer.toString(y) + ")", StringUtils.TRUE);
 	}
@@ -291,13 +250,5 @@ public class PlayerModule {
 		System.arraycopy(params, 0, newParams, 1, params.length);
 
 		return dataConnector.sendDataToServerSession(event, newParams);
-	}
-
-	/**
-	 * Set the dataconnector to use for this player.
-	 * @param dataConnector The DataConnector to use.
-	 */
-	public void setDataConnector(DataConnector dataConnector) {
-		this.dataConnector = dataConnector;
 	}
 }

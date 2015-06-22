@@ -67,6 +67,7 @@ public enum MapLink {
 		STAKEHOLDERS,
 		STRATEGIES,
 		TAX_PLANS,
+		TERRAINS,
 		TIMES,
 		UNITS,
 		UNIT_DATAS,
