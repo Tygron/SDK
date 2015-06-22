@@ -1,40 +1,65 @@
 package com.tygron.pub.api.data.item;
 
-import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.tygron.pub.api.data.item.Function.FunctionValue;
-import com.tygron.pub.utils.StringUtils;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class FunctionOverride extends Item {
+public class FunctionOverride extends AbstractFunctionBase {
 
-	private String description = null;
-	private String name = null;
-	private Map<FunctionValue, Double> functionValues = new HashMap<FunctionValue, Double>();
+	private List<Map<String, ?>> indicatorScores = new LinkedList<Map<String, ?>>();
 
-	// private Map<?, ?> categoryValues;
-
+	@Override
 	public String getDescription() {
-		return this.description;
+		return super.getName();
 	}
 
+	@Override
 	public int getFloorsDefault() {
-		return functionValues.getOrDefault(FunctionValue.DEFAULT_FLOORS, new Double(StringUtils.NOTHING))
-				.intValue();
+		return super.getFloorsDefault();
 	}
 
+	@Override
 	public int getFloorsMax() {
-		return functionValues.getOrDefault(FunctionValue.MAX_FLOORS, new Double(StringUtils.NOTHING))
-				.intValue();
+		return super.getFloorsMax();
 	}
 
+	@Override
 	public int getFloorsMin() {
-		return functionValues.getOrDefault(FunctionValue.MIN_FLOORS, new Double(StringUtils.NOTHING))
-				.intValue();
+		return super.getFloorsMin();
 	}
 
+	@Override
+	public Double getFunctionValue(FunctionValue functionValue) {
+		return getFunctionValue(functionValue);
+	}
+
+	@Override
+	public Map<FunctionValue, Double> getFunctionValues() {
+		return getFunctionValues();
+	}
+
+	public double getIndicatorScore(Integer indicatorID) {
+		for (Map<String, ?> indicatorScore : indicatorScores) {
+			if (indicatorScore.get("indicatorID").equals(indicatorID)) {
+				return (double) indicatorScore.get("score");
+			}
+		}
+		return 0.0;
+	}
+
+	@Override
 	public String getName() {
-		return this.name;
+		return super.getName();
+	}
+
+	public boolean hasIndicatorScore(Integer indicatorID) {
+		for (Map<String, ?> indicatorScore : indicatorScores) {
+			if (indicatorScore.get("indicatorID").equals(indicatorID)) {
+				return true;
+			}
+		}
+		return false;
 	}
 }
