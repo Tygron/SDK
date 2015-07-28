@@ -27,7 +27,7 @@ public class ExtendedDataConnector extends DataConnector {
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	private static class CreateProjectObject {
-		private String FILENAME;
+		private String fullName;
 	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
@@ -52,7 +52,11 @@ public class ExtendedDataConnector extends DataConnector {
 	 * @param dataConnector
 	 */
 	public ExtendedDataConnector(DataConnector dataConnector) {
-		duplicateSettings(dataConnector);
+		if (dataConnector != null) {
+			duplicateSettings(dataConnector);
+		} else {
+			throw new NullPointerException();
+		}
 	}
 
 	/**
@@ -82,7 +86,7 @@ public class ExtendedDataConnector extends DataConnector {
 	}
 
 	/**
-	 * Start a session on the server, and join it.
+	 * Create a new game on the server.
 	 * @param serverAddress The address for the server.
 	 * @param username The username to use to authenticate.
 	 * @param password The password to use to authenticate.
@@ -112,7 +116,7 @@ public class ExtendedDataConnector extends DataConnector {
 		try {
 			CreateProjectObject gameData = JsonUtils.mapJsonToType(data.getContent(),
 					CreateProjectObject.class);
-			returnableGameName = gameData.FILENAME;
+			returnableGameName = gameData.fullName;
 		} catch (Exception e) {
 			throw new UnexpectedException("Failed to retrieve the game name of the created project", e);
 		}
@@ -125,16 +129,21 @@ public class ExtendedDataConnector extends DataConnector {
 	 * several minutes, depending on the size of the map and availability of services. This function will
 	 * attempt to set the map size, and then begin map generation. If the map size was already set, the
 	 * original map size is NOT overridden. Coordinates are defined by the EPSG:3857 format.<br>
+	 * This function will throw an exception if the connection is closed while generating, unless the thread
+	 * is interrupted. When the thread is interrupted, -1 will be returned immediately. The map generation
+	 * process may continue on the server.<br>
 	 * Note that using this function when the project is not loaded in the editor, or performing other tasks
 	 * in the same session may cause unpredictable behavior.
 	 * @param mapSize Desired width and height of the map in meters.
 	 * @param locationX X Coordinate according to the EPSG:3857 format.
 	 * @param locationY Y Coordinate according to the EPSG:3857 format.
 	 * @return The amount of failed processes during generation. 0 is success. More then 0 means some
-	 *         datasources failed to load.
+	 *         datasources failed to load. -1 Means the process was interrupted.
 	 * @throws IllegalArgumentException If the map size is either 0 or smaller, or too large.
+	 * @throws InterruptedException If the function is interrupted while awaiting generation.
 	 */
-	public int generateMap(int mapSize, double locationX, double locationY) throws IllegalArgumentException {
+	public int generateMap(int mapSize, double locationX, double locationY) throws IllegalArgumentException,
+			InterruptedException {
 		parameterCheckDetails(true, true, true);
 
 		generateMapSize(mapSize);
@@ -142,6 +151,7 @@ public class ExtendedDataConnector extends DataConnector {
 		DataPackage data = sendDataToServerSession(SessionEvent.GENERATE_GAME.url(),
 				Double.toString(locationX), Double.toString(locationY));
 
+		boolean interrupted = false;
 		boolean fail = false;
 		int runs = 0;
 		int barsTotal;
@@ -164,14 +174,25 @@ public class ExtendedDataConnector extends DataConnector {
 				continue;
 			}
 
-			Map<Integer, Map<?, ?>> progressMap;
+			Map<Integer, Map<?, ?>> progressMap = null;
 			try {
 				progressMap = DataUtils.dataListToMap((List<Map<String, Map<?, ?>>>) (JsonUtils
 						.mapJsonToList(data.getContent())));
 			} catch (ClassCastException e) {
 				throw new ClassCastException(
 						"Failed to properly parse progress for the geographical generation process.");
+			} catch (IllegalArgumentException e) {
+				if (!Thread.interrupted()) {
+					throw new IllegalStateException("Response was not expected");
+				} else {
+					interrupted = true;
+				}
 			}
+
+			if (progressMap == null) {
+				continue;
+			}
+
 			barsTotal = progressMap.size();
 			for (Map<?, ?> progressBar : progressMap.values()) {
 				if (!(progressBar instanceof Map)) {
@@ -187,8 +208,15 @@ public class ExtendedDataConnector extends DataConnector {
 				Log.verbose("Map generation progress complete: " + barsComplete + "/" + barsTotal);
 				barsCompleteSoFar = barsComplete;
 			}
-		} while (barsTotal > barsComplete || fail);
+			if (Thread.interrupted()) {
+				interrupted = true;
+			}
+		} while (barsTotal > barsComplete && !fail && (!interrupted));
 
+		if (interrupted) {
+			Log.verbose("Map generation was interrupted. (Note that the process may continue on the server).");
+			throw new InterruptedException();
+		}
 		return barsFailed;
 	}
 
