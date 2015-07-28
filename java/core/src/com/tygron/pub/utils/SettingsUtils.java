@@ -32,7 +32,8 @@ public class SettingsUtils {
 		}
 	}
 
-	public static final String DEFAULT_AUTH_FILE = "authentication.cfg";
+	public static final String EXTENSION = ".cfg";
+	public static final String DEFAULT_AUTH_FILE = "authentication" + EXTENSION;
 
 	public static boolean isValidCredentials(Properties properties) {
 		for (TygronCredential credential : TygronCredential.values()) {

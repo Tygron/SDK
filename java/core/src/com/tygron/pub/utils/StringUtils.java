@@ -21,6 +21,9 @@ public class StringUtils {
 	public static final String EMPTY = "";
 	public static final int NOTHING = -1;
 
+	public static final String LINEBREAK = System.lineSeparator();
+	public static final String SPACE = " ";
+
 	public static boolean isEmpty(String string) {
 		return string == null || EMPTY.equals(string);
 	}
