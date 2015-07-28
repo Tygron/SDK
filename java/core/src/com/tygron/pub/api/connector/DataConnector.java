@@ -344,8 +344,8 @@ public class DataConnector {
 			builder.property(HttpAuthenticationFeature.HTTP_AUTHENTICATION_BASIC_PASSWORD, password);
 		} else {
 			Log.verbose("Username or password are not set");
-			builder.property(HttpAuthenticationFeature.HTTP_AUTHENTICATION_BASIC_USERNAME, " ");
-			builder.property(HttpAuthenticationFeature.HTTP_AUTHENTICATION_BASIC_PASSWORD, " ");
+			builder.property(HttpAuthenticationFeature.HTTP_AUTHENTICATION_BASIC_USERNAME, StringUtils.SPACE);
+			builder.property(HttpAuthenticationFeature.HTTP_AUTHENTICATION_BASIC_PASSWORD, StringUtils.SPACE);
 		}
 
 		if (this.serverToken != null) {
