@@ -26,8 +26,8 @@ public enum ServerEvent
 		KILL_SESSION(
 			"IOServicesEventType/KILL_SESSION/"),
 
-		GET_MENU_TREE(
-			"IOServicesEventType/GET_MENU_TREE/"),
+		GET_VISIBLE_PROJECTS(
+			"IOServicesEventType/GET_VISIBLE_PROJECTS/"),
 
 		GET_JOINABLE_SESSIONS(
 			"IOServicesEventType/GET_JOINABLE_SESSIONS/");
