@@ -82,7 +82,8 @@ public class DataMonitor {
 	private void storeData(String mapLink, Integer id, Map<?, ?> item, boolean delete) {
 		if (mapLink == null || id == null) {
 			Log.warning("Failed to store data because the following was null:"
-					+ (mapLink == null ? " Maplink" : "") + (id == null ? " id" : ""));
+					+ (mapLink == null ? " Maplink" : StringUtils.EMPTY)
+					+ (id == null ? " id" : StringUtils.EMPTY));
 			return;
 		}
 
@@ -100,7 +101,7 @@ public class DataMonitor {
 		try {
 			updateVersion(mapLink, (Integer) item.get("version"));
 		} catch (ClassCastException e) {
-			Log.exception(e, mapLink + " " + id + "' version is not of type Integer.");
+			Log.exception(e, mapLink + StringUtils.SPACE + id + "' version is not of type Integer.");
 		}
 	}
 
@@ -130,7 +131,8 @@ public class DataMonitor {
 				try {
 					updateVersion(mapLink, (Integer) entry.getValue().get("version"));
 				} catch (ClassCastException e) {
-					Log.exception(e, mapLink + " " + entry.getKey() + "' version is not of type Integer.");
+					Log.exception(e, mapLink + StringUtils.SPACE + entry.getKey()
+							+ "' version is not of type Integer.");
 				}
 			}
 		}
