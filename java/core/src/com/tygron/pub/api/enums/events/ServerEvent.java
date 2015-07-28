@@ -6,6 +6,9 @@ public enum ServerEvent
 	implements
 	ServerEventType {
 
+		GET_MY_USER(
+			"UserServicesEventType/GET_MY_USER/"),
+
 		CREATE_PROJECT(
 			"IOServicesEventType/CREATE_NEW_PROJECT/"),
 		SET_PERMISSION(
