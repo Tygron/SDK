@@ -11,7 +11,6 @@ import com.tygron.pub.api.enums.events.SessionEvent;
 import com.tygron.pub.utils.StringUtils;
 
 public class PlayerModule extends DataModule {
-	private DataConnector dataConnector = null;
 	private int stakeholderID = StringUtils.NOTHING;
 
 	/**
@@ -129,7 +128,7 @@ public class PlayerModule extends DataModule {
 	}
 
 	protected boolean isPlayerReady(boolean stakeholder) {
-		if ((!isModuleReady()) || dataConnector.getClientToken() == null
+		if ((!isModuleReady()) || getDataConnector() == null
 				|| (stakeholder && stakeholderID == StringUtils.NOTHING)) {
 			throw new IllegalStateException("The registered DataConnector is not ready");
 		}
@@ -164,8 +163,8 @@ public class PlayerModule extends DataModule {
 	 */
 	public void ping(int x, int y) {
 		isPlayerReady();
-		sendPlayerEvent(SessionEvent.STAKEHOLDER_SET_LOCATION, "POINT (" + Integer.toString(x) + " "
-				+ Integer.toString(y) + ")", StringUtils.TRUE);
+		sendPlayerEvent(SessionEvent.STAKEHOLDER_SET_LOCATION, "POINT (" + Integer.toString(x)
+				+ StringUtils.SPACE + Integer.toString(y) + ")", StringUtils.TRUE);
 	}
 
 	/**
@@ -225,8 +224,8 @@ public class PlayerModule extends DataModule {
 	public boolean selectStakeholder(int stakeholderID) throws IllegalArgumentException {
 		isPlayerReady(false);
 
-		DataPackage data = dataConnector.sendDataToServerSession(SessionEvent.STAKEHOLDER_SELECT,
-				Integer.toString(stakeholderID), dataConnector.getClientToken());
+		DataPackage data = getDataConnector().sendDataToServerSession(SessionEvent.STAKEHOLDER_SELECT,
+				Integer.toString(stakeholderID), getDataConnector().getClientToken());
 
 		if (data.isContentNull()) {
 			throw new IllegalArgumentException("No stakeholder with ID: " + stakeholderID);
@@ -249,6 +248,6 @@ public class PlayerModule extends DataModule {
 		newParams[0] = Integer.toString(stakeholderID);
 		System.arraycopy(params, 0, newParams, 1, params.length);
 
-		return dataConnector.sendDataToServerSession(event, newParams);
+		return getDataConnector().sendDataToServerSession(event, newParams);
 	}
 }

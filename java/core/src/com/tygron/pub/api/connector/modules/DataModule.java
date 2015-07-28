@@ -44,6 +44,14 @@ public class DataModule {
 	}
 
 	/**
+	 * Get the dataConnector of the module.
+	 * @return The DataConnector of the module.
+	 */
+	public DataConnector getDataConnector() {
+		return this.dataConnector;
+	}
+
+	/**
 	 * Retrieve a specific function.
 	 * @param messageID The ID of the function.
 	 * @return The Function.
