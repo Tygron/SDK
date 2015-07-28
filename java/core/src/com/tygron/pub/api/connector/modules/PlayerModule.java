@@ -80,7 +80,7 @@ public class PlayerModule extends DataModule {
 	public void buildingPlanRevert(String locationString) {
 		isPlayerReady();
 
-		sendPlayerEvent(SessionEvent.BUILDING_REVERT_COORDINATES, locationString);
+		sendPlayerEvent(SessionEvent.BUILDING_REVERT_POLYGON, locationString);
 	}
 
 	/**
