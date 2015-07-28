@@ -13,6 +13,10 @@ public enum ServerEvent
 		DELETE_PROJECT(
 			"IOServicesEventType/DELETE_PROJECT/"),
 
+		SAVE_PROJECT_INIT(
+			// WARNING: until it's fixed properly: don't use this during single or multiplayer
+			"IOServicesEventType/SAVE_PROJECT_INIT/"),
+
 		NEW_SESSION(
 			"IOServicesEventType/START_NEW_SESSION/"),
 		JOIN_SESSION(

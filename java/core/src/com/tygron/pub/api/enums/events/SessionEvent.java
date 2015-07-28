@@ -11,10 +11,6 @@ public enum SessionEvent
 		GENERATE_GAME(
 			"EditorEventType/START_WORLD_CREATION/"),
 
-		SAVE_PROJECT_INIT(
-			// WARNING: until it's fixed properly: don't use this during single or multiplayer
-			"SaveSessionEvent/SAVE_PROJECT_INIT/"),
-
 		STAKEHOLDER_SELECT(
 			"PlayerEventType/STAKEHOLDER_SELECT/"),
 		STAKEHOLDER_RELEASE(
