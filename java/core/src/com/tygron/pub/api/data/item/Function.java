@@ -9,6 +9,7 @@ import com.tygron.pub.utils.StringUtils;
 public class Function extends AbstractFunctionBase {
 	private String placementType = StringUtils.EMPTY;
 	private Integer dimension = StringUtils.NOTHING;
+	private Boolean deprecated = false;
 
 	/**
 	 * Get the total value of a categoryValue (such as cost per m²) per m² of this function.
@@ -62,7 +63,8 @@ public class Function extends AbstractFunctionBase {
 		returnable.putAll(super.getCategoryValues());
 		if (override != null) {
 			for (FunctionCategory category : override.getCategoryValues().keySet()) {
-				// Add each category also found in override as a new map, to prevent overwriting original data
+				// Add each category also found in override as a new (empty) map, to prevent overwriting
+				// original data
 				Map<CategoryValue, Double> existingCategoryValues = returnable.get(category);
 				returnable.put(category, new HashMap<CategoryValue, Double>());
 				if (existingCategoryValues != null) {
@@ -70,8 +72,11 @@ public class Function extends AbstractFunctionBase {
 					returnable.get(category).putAll(existingCategoryValues);
 				}
 
-				// Add each value in an override's category to the usable data
+				// Add each value in an override's category to the usable data.
 				returnable.get(category).putAll(override.getCategoryValues().get(category));
+
+				// At this point, for this category, all values in the returnable map are the original values,
+				// unless overwritten.
 			}
 		}
 
@@ -139,11 +144,15 @@ public class Function extends AbstractFunctionBase {
 
 	public String getName(FunctionOverride override) {
 		if (override != null) {
-			if (override.getName() != null) {
+			if (!StringUtils.isEmpty(override.getName())) {
 				return override.getName();
 			}
 		}
 		return super.getName();
+	}
+
+	public boolean isDeprecated() {
+		return deprecated;
 	}
 
 	public boolean isFixedSize() {
@@ -159,14 +168,6 @@ public class Function extends AbstractFunctionBase {
 		}
 		Double categoryWeight = getCategoryValue(category, CategoryValue.CATEGORY_WEIGHT);
 		return categoryWeight != null;
-	}
-
-	public boolean noValues() {
-		for (FunctionCategory f : getCategoryValues().keySet()) {
-			// 1 means only CategoryWeight exists
-			return (getCategoryValues().get(f).size() == 1);
-		}
-		return false;
 	}
 
 	public String placementType() {

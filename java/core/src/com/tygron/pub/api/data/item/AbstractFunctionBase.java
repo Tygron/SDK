@@ -181,7 +181,7 @@ public class AbstractFunctionBase extends Item {
 				0.0,// buyout
 				0.0) // sell
 		;
-
+		public static final FunctionCategory[] VALUES = FunctionCategory.values();
 		private Map<CategoryValue, Double> defaultValues = new HashMap<CategoryValue, Double>();
 
 		private FunctionCategory() {

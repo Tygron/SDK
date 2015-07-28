@@ -131,9 +131,9 @@ public class Popup extends Item {
 	}
 
 	public Double[] getPoint() {
-		String strippedPoint = getPointString().replace("POINT (", "");
-		strippedPoint = strippedPoint.replace(")", "");
-		String[] splitPoint = strippedPoint.split(" ");
+		String strippedPoint = getPointString().replace("POINT (", StringUtils.EMPTY);
+		strippedPoint = strippedPoint.replace(")", StringUtils.EMPTY);
+		String[] splitPoint = strippedPoint.split(StringUtils.SPACE);
 		try {
 			return new Double[] { Double.parseDouble(splitPoint[0]), Double.parseDouble(splitPoint[1]) };
 		} catch (Exception e) {
