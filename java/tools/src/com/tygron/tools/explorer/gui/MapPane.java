@@ -36,6 +36,7 @@ import com.tygron.tools.explorer.map.MapRenderManager.RenderManagerListener;
 import com.tygron.tools.explorer.map.parsers.AbstractMapModule;
 import com.tygron.tools.explorer.map.parsers.ImageSaveMapModule;
 import com.tygron.tools.explorer.map.parsers.PipeMapModule;
+import com.tygron.tools.explorer.map.parsers.RemoteMeasureModule;
 
 public class MapPane extends GameExplorerSubPane implements RenderManagerListener {
 
@@ -111,8 +112,8 @@ public class MapPane extends GameExplorerSubPane implements RenderManagerListene
 
 		this.getChildren().add(verticalPane);
 
-		mapFunctionAndSwitcherContainer.setMinHeight(200.0);
-		mapFunctionAndSwitcherContainer.setPrefHeight(200.0);
+		mapFunctionAndSwitcherContainer.setMinHeight(400.0);
+		mapFunctionAndSwitcherContainer.setPrefHeight(400.0);
 		mapFunctionAndSwitcherContainer.setFillWidth(true);
 
 		HBox mapFunctionSelectionPane = new HBox();
@@ -230,18 +231,20 @@ public class MapPane extends GameExplorerSubPane implements RenderManagerListene
 
 	private List<AbstractMapModule> loadModules() {
 		final List<AbstractMapModule> modules = new LinkedList<AbstractMapModule>();
+		final List<AbstractMapModule> returnable = new LinkedList<AbstractMapModule>();
 		modules.add(new ImageSaveMapModule());
 		modules.add(new PipeMapModule());
+		modules.add(new RemoteMeasureModule());
 
 		for (AbstractMapModule module : modules) {
 			module.setCommunicator(getCommunicator());
 			module.setRenderManager(this.renderManager);
-			if (!module.isFunctional()) {
-				modules.remove(module);
+			if (module.isFunctional()) {
+				returnable.add(module);
 			}
 		}
 
-		return modules;
+		return returnable;
 	}
 
 	@Override

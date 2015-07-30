@@ -244,12 +244,14 @@ public class LoginPane extends GameExplorerSubPane {
 	private boolean connectLogin() {
 		setCredentials();
 
+		Map<String, ?> userDetails = getCommunicator().getCurrentUser();
+
 		List<JoinableSessionObject> sessions = null;
 		sessions = getCommunicator().getJoinableProjects();
 		fillSessionsList(sessions);
 
 		Map<String, Collection<String>> projects = null;
-		projects = getCommunicator().getStartableProjects();
+		projects = getCommunicator().getStartableProjects((String) userDetails.get("domain"));
 		fillProjectsList(projects);
 
 		setStatus(StringUtils.EMPTY);

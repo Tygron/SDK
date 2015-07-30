@@ -5,9 +5,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import javafx.application.Platform;
+import com.tygron.pub.api.connector.DataPackage;
 import com.tygron.pub.api.data.misc.JoinableSessionObject;
 import com.tygron.pub.api.data.misc.LocationObject;
 import com.tygron.pub.api.enums.MapLink;
+import com.tygron.pub.api.enums.events.SessionEvent;
 import com.tygron.pub.logger.Log;
 import com.tygron.tools.explorer.gui.DataPane;
 import com.tygron.tools.explorer.gui.GameExplorerSubPane;
@@ -32,6 +34,14 @@ public class ExplorerCommunicator {
 
 	}
 
+	public DataPackage fireEvent(String event, String... params) {
+		return dataThread.getDataConnector().sendDataToServerSession(event, params);
+	}
+
+	public Map<String, ?> getCurrentUser() {
+		return dataThread.attemptGetMyUser();
+	}
+
 	public Map<Integer, Map<?, ?>> getData(MapLink mapLink) {
 		return dataThread.getData(mapLink);
 	}
@@ -50,8 +60,8 @@ public class ExplorerCommunicator {
 		return location;
 	}
 
-	public Map<String, Collection<String>> getStartableProjects() {
-		return dataThread.attemptGetStartableProjects();
+	public Map<String, Collection<String>> getStartableProjects(String domain) {
+		return dataThread.attemptGetStartableProjects(domain);
 	}
 
 	public void issueUpdate() {
@@ -111,6 +121,12 @@ public class ExplorerCommunicator {
 			return;
 		}
 		mapPane.updateDisplayedData(mapLink, data);
+	}
+
+	public void selectStakeholder(int stakeholderID) {
+		dataThread.getDataConnector().sendDataToServerSession(SessionEvent.STAKEHOLDER_SELECT,
+				Integer.toString(stakeholderID), dataThread.getDataConnector().getClientToken());
+
 	}
 
 	public void setCredentials(String server, String username, String password) {

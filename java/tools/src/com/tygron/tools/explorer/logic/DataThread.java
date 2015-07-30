@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import javax.xml.ws.http.HTTPException;
 import com.tygron.pub.api.connector.DataPackage;
 import com.tygron.pub.api.connector.ExtendedDataConnector;
@@ -70,14 +69,23 @@ public class DataThread extends Thread implements UpdateListenerInterface {
 		}
 	}
 
-	public Map<String, Collection<String>> attemptGetStartableProjects() {
-		Map<String, Collection<String>> returnable = new HashMap<String, Collection<String>>();
-		DataPackage data = dc.sendDataToServer(ServerEvent.GET_MENU_TREE, "NEW");
+	public Map<String, ?> attemptGetMyUser() {
+		DataPackage data = dc.sendDataToServer(ServerEvent.GET_MY_USER);
+		return (Map<String, ?>) JsonUtils.mapJsonToMap((data.getContent()));
+	}
 
-		Map<String, Map<String, Map<String, ?>>> fullMap = (Map<String, Map<String, Map<String, ?>>>) JsonUtils
-				.mapJsonToMap(data.getContent());
-		for (Entry<String, Map<String, ?>> project : fullMap.get("tree").entrySet()) {
-			returnable.put(project.getKey(), project.getValue().keySet());
+	public Map<String, Collection<String>> attemptGetStartableProjects(String domain) {
+		Map<String, Collection<String>> returnable = new HashMap<String, Collection<String>>();
+		// TODO: load domain name from elsewhere
+		DataPackage data = dc.sendDataToServer(ServerEvent.GET_VISIBLE_PROJECTS, domain);
+
+		List<String> allProjects = (List<String>) JsonUtils.mapJsonToList((data.getContent()));
+
+		List<Map<String, Map<String, ?>>> fullList = (List<Map<String, Map<String, ?>>>) JsonUtils
+				.mapJsonToList(data.getContent());
+
+		for (Map<String, ?> entry : fullList) {
+			returnable.put((String) entry.get("fileName"), (List<String>) entry.get("languages"));
 		}
 
 		return returnable;
@@ -101,6 +109,10 @@ public class DataThread extends Thread implements UpdateListenerInterface {
 
 	public Map<Integer, Map<?, ?>> getData(MapLink mapLink) {
 		return updateMonitor.getDataMonitor().getData(mapLink.toString());
+	}
+
+	public ExtendedDataConnector getDataConnector() {
+		return this.dc;
 	}
 
 	public LocationObject getLocation() {
