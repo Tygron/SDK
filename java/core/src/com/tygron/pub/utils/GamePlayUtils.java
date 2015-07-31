@@ -14,6 +14,7 @@ import com.tygron.pub.api.data.item.Item;
 import com.tygron.pub.api.data.item.Message;
 import com.tygron.pub.api.data.item.Message.MessageAnswer;
 import com.tygron.pub.api.data.item.Popup;
+import com.tygron.pub.api.data.item.Stakeholder;
 import com.tygron.pub.api.enums.MapLink;
 import com.tygron.pub.api.enums.events.AnswerEvent;
 import com.tygron.pub.api.enums.events.SessionEvent;
@@ -200,6 +201,37 @@ public class GamePlayUtils {
 		Building building = getBuilding(ownerID, location, functionID, floors, dataConnector);
 
 		return getMessagesRelatedToBuilding(building, dataConnector);
+	}
+
+	public static List<Stakeholder> getPlayableStakeholders(Collection<Stakeholder> stakeholders) {
+		List<Stakeholder> returnable = new LinkedList<Stakeholder>();
+		if (stakeholders == null) {
+			return returnable;
+		}
+		for (Stakeholder stakeholder : stakeholders) {
+			if (stakeholder.isPlayable()) {
+				returnable.add(stakeholder);
+			}
+		}
+		return returnable;
+	}
+
+	public static List<Stakeholder> getPlayableStakeholders(DataConnector dataConnector) {
+		Map<Integer, Stakeholder> stakeholders = null;
+		DataPackage data = dataConnector.getDataFromServerSession(MapLink.STAKEHOLDERS);
+
+		try {
+			List<?> stakeholderList = JsonUtils.mapJsonToList(data.getContent());
+			stakeholders = DataUtils.dataListToItemMap((List<Map<String, Map<?, ?>>>) stakeholderList,
+					Stakeholder.class);
+		} catch (NullPointerException e) {
+			return null;
+		} catch (IllegalArgumentException e) {
+			return null;
+		} catch (ClassCastException e) {
+			return null;
+		}
+		return getPlayableStakeholders(stakeholders.values());
 	}
 
 	public static List<Popup> getPopupsRelatedToBuilding(Building building, Collection<Popup> popups) {
