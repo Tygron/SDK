@@ -26,12 +26,13 @@ import com.tygron.pub.utils.StringUtils;
 
 public class DataConnector {
 
-	private enum RequestType {
+	public enum RequestType {
 			GET,
 			POST;
 	}
 
 	private final static Client CLIENT;
+	private final static MediaType DEFAULT_MEDIA_TYPE = MediaType.WILDCARD_TYPE;
 
 	static {
 		CLIENT = ClientBuilder.newClient();
@@ -205,7 +206,7 @@ public class DataConnector {
 		WebTarget target = CLIENT.target(url);
 		Response response;
 
-		Builder builder = target.request(MediaType.APPLICATION_JSON_TYPE);
+		Builder builder = target.request(DEFAULT_MEDIA_TYPE);
 		builder = setCredentials(builder);
 
 		try {
