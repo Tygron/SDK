@@ -1,5 +1,7 @@
 package com.tygron.pub.utils;
 
+import java.io.File;
+
 public class StringUtils {
 
 	public static final String URL_DELIMITER = "/";
@@ -22,6 +24,7 @@ public class StringUtils {
 	public static final int NOTHING = -1;
 
 	public static final String LINEBREAK = System.lineSeparator();
+	public static final String FILE_SEPARATOR = File.separator;
 	public static final String SPACE = " ";
 
 	public static boolean isEmpty(String string) {
