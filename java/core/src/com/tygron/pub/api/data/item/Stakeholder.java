@@ -8,7 +8,7 @@ public class Stakeholder extends Item {
 
 	private String name = StringUtils.EMPTY;
 	private String shortName = StringUtils.EMPTY;
-	private boolean playable = false;
+	private boolean human = false;
 
 	public String getName() {
 		return name;
@@ -19,6 +19,6 @@ public class Stakeholder extends Item {
 	}
 
 	public boolean isPlayable() {
-		return playable;
+		return human;
 	}
 }
