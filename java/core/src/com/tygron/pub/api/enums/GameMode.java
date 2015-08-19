@@ -16,6 +16,13 @@ public enum GameMode {
 		this.clientTypes = clientTypes;
 	}
 
+	public ClientType getMainClientType() {
+		for (ClientType c : clientTypes) {
+			return c;
+		}
+		return null;
+	}
+
 	public boolean isValidClientType(final String clientType) {
 		ClientType provided = ClientType.valueOf(clientType);
 		for (ClientType c : clientTypes) {
