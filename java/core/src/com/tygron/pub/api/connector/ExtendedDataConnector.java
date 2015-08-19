@@ -360,6 +360,10 @@ public class ExtendedDataConnector extends DataConnector {
 			return false;
 		}
 
+		if (joinObject == null) {
+			return false;
+		}
+
 		setServerToken(joinObject.serverToken);
 		setClientToken(joinObject.client.clientToken);
 
