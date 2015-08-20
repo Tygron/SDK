@@ -11,6 +11,7 @@ import com.tygron.pub.api.enums.MapLink;
 import com.tygron.pub.api.enums.events.ServerEvent;
 import com.tygron.pub.api.enums.events.SessionEvent;
 import com.tygron.pub.exceptions.IncompleteResponseException;
+import com.tygron.pub.exceptions.InsufficientRightsException;
 import com.tygron.pub.logger.Log;
 import com.tygron.pub.utils.DataUtils;
 import com.tygron.pub.utils.JsonUtils;
@@ -481,6 +482,8 @@ public class ExtendedDataConnector extends DataConnector {
 	 * @return True when the session is started successfully. False if the session failed to start.
 	 * @throws NullPointerException When a required argument to this method is null, this exception is
 	 *             immediately thrown.
+	 * @throws InsufficientRightsException When the account credentials are valid but the rights of the
+	 *             account are insufficient, this exception is thrown.
 	 * @throws UnexpectedException When the server responds in an unexpected fashion, this exception is
 	 *             immediately thrown.
 	 */
@@ -502,6 +505,9 @@ public class ExtendedDataConnector extends DataConnector {
 
 		DataPackage data = sendDataToServer(ServerEvent.NEW_SESSION.url(), gameMode, gameName, language,
 				null, null);
+		if (data.getContent().equals("INSUFFICIENT_RIGHTS")) {
+			throw new InsufficientRightsException();
+		}
 		String slot = data.getContent();
 
 		return joinSession(null, null, null, clientType, slot, clientAddress, clientName);
