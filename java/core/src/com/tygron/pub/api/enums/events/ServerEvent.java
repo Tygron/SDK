@@ -11,7 +11,7 @@ public enum ServerEvent
 
 		CREATE_PROJECT(
 			"IOServicesEventType/CREATE_NEW_PROJECT/"),
-		SET_PERMISSION(
+		SET_PROJECT_PERMISSION(
 			"IOServicesEventType/SET_PROJECT_PERMISSION/"),
 		DELETE_PROJECT(
 			"IOServicesEventType/DELETE_PROJECT/"),
