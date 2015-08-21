@@ -29,6 +29,7 @@ public class ExtendedDataConnector extends DataConnector {
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	private static class CreateProjectObject {
 		private String fullName;
+		private String fileName;
 	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
@@ -117,7 +118,7 @@ public class ExtendedDataConnector extends DataConnector {
 		try {
 			CreateProjectObject gameData = JsonUtils.mapJsonToType(data.getContent(),
 					CreateProjectObject.class);
-			returnableGameName = gameData.fullName;
+			returnableGameName = gameData.fileName;
 		} catch (Exception e) {
 			throw new UnexpectedException("Failed to retrieve the game name of the created project", e);
 		}
