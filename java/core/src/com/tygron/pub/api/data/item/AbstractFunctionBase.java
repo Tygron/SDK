@@ -226,7 +226,10 @@ public class AbstractFunctionBase extends Item {
 			GROUND_FLOOR_HEIGHT,
 			EXTRA_FLOOR_HEIGHT,
 			TOP_FLOOR_HEIGHT,
-			SLANTING_ROOF_HEIGHT;
+			SLANTING_ROOF_HEIGHT,
+			TRAFFIC_FLOW,
+			TRAFFIC_SPEED,
+			TRAFFIC_LANES;
 	}
 
 	private String description = StringUtils.EMPTY;
