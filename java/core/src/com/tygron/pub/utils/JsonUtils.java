@@ -6,6 +6,7 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -27,8 +28,11 @@ public class JsonUtils {
 		MAPPER.setVisibility(PropertyAccessor.IS_GETTER, Visibility.NONE);
 		MAPPER.setVisibility(PropertyAccessor.SETTER, Visibility.NONE);
 
+		MAPPER.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL, true);
+
 		READER_LIST = JsonUtils.MAPPER.reader(List.class);
 		READER_MAP = JsonUtils.MAPPER.reader(Map.class);
+
 	}
 
 	public static <T extends Object> T mapJsonIntoObject(final String json, final T object) {
