@@ -121,7 +121,6 @@ public class AbstractFunctionBase extends Item {
 				4000.0,// buyout
 				5000.0), // sell
 			SENIOR(
-				// Could not find default values
 				1.0,// weight
 				100.0,// size
 				-0.30000001192092896,// heat
