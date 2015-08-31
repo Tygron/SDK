@@ -79,13 +79,15 @@ public class RemoteMeasureModule extends AbstractMapModule {
 		// grid.add(cinematicButton, 4, i);
 
 		List<Map<?, ?>> orderedMeasures = new LinkedList<Map<?, ?>>();
-		for (Map<?, ?> m : measures.values()) {
-			try {
-				if (((String) m.get("name")).startsWith("ADMIN")) {
-					orderedMeasures.add(m);
+		if (measures != null) {
+			for (Map<?, ?> m : measures.values()) {
+				try {
+					if (((String) m.get("name")).startsWith("ADMIN")) {
+						orderedMeasures.add(m);
+					}
+				} catch (Exception e) {
+					this.setStatus("Failed to parse at least one measure.");
 				}
-			} catch (Exception e) {
-				this.setStatus("Failed to parse at least one measure.");
 			}
 		}
 
@@ -156,7 +158,6 @@ public class RemoteMeasureModule extends AbstractMapModule {
 				continue;
 			}
 		}
-
 		pane.getChildren().add(grid);
 		return pane;
 	}

@@ -81,8 +81,7 @@ public class DataThread extends Thread implements UpdateListenerInterface {
 
 		List<String> allProjects = (List<String>) JsonUtils.mapJsonToList((data.getContent()));
 
-		List<Map<String, Map<String, ?>>> fullList = (List<Map<String, Map<String, ?>>>) JsonUtils
-				.mapJsonToList(data.getContent());
+		List<Map<String, ?>> fullList = (List<Map<String, ?>>) JsonUtils.mapJsonToList(data.getContent());
 
 		for (Map<String, ?> entry : fullList) {
 			returnable.put((String) entry.get("fileName"), (List<String>) entry.get("languages"));
@@ -203,8 +202,7 @@ public class DataThread extends Thread implements UpdateListenerInterface {
 			}
 			String dataString = data.getContent();
 			try {
-				List<Map<String, Map<?, ?>>> dataList = (List<Map<String, Map<?, ?>>>) JsonUtils
-						.mapJsonToList(dataString);
+				List<Map<?, ?>> dataList = (List<Map<?, ?>>) JsonUtils.mapJsonToList(dataString);
 				updateMonitor.getDataMonitor().storeData(mapLink, DataUtils.dataListToMap(dataList), false);
 			} catch (ClassCastException e) {
 				setStatus("Failed to load " + mapLink + " because it failed to cast to a list");

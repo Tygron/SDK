@@ -8,9 +8,13 @@ import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.embed.swing.SwingFXUtils;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundImage;
@@ -36,6 +40,7 @@ import com.tygron.tools.explorer.map.MapRenderManager.RenderManagerListener;
 import com.tygron.tools.explorer.map.parsers.AbstractMapModule;
 import com.tygron.tools.explorer.map.parsers.ImageSaveMapModule;
 import com.tygron.tools.explorer.map.parsers.PipeMapModule;
+import com.tygron.tools.explorer.map.parsers.PrintFunctionsModule;
 import com.tygron.tools.explorer.map.parsers.RemoteMeasureModule;
 
 public class MapPane extends GameExplorerSubPane implements RenderManagerListener {
@@ -163,6 +168,64 @@ public class MapPane extends GameExplorerSubPane implements RenderManagerListene
 			module.setCommunicator(getCommunicator());
 			module.setRenderManager(this.renderManager);
 		}
+
+		// mapFunctionSubPaneContainer.setContent(new ImageSaveMapModule());
+
+		//
+		//
+		//
+		//
+		//
+
+		if (true) {
+			return;
+		}
+
+		Pane polygonPane = new Pane();
+		polygonPane.setMinHeight(100.0);
+		polygonPane.setPrefHeight(100.0);
+
+		HBox polygonHBox = new HBox();
+		Text polygonText = new Text("Polygon: ");
+		TextField polygonField = new TextField();
+		HBox.setHgrow(polygonField, Priority.ALWAYS);
+		Button polygonButton = new Button("Render");
+		polygonButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				Platform.runLater(new Runnable() {
+					@Override
+					public void run() {
+						Log.info("Map width: " + map.getWidth());
+						Log.info("MapContainer width: " + mapContainer.getWidth());
+						Log.info("MapPaneAndRenderContainer width: " + mapPaneAndRenderContainer.getWidth());
+						renderManager.displayUserDefinedPolygon(polygonField.getText());
+					}
+				});
+			}
+		});
+		polygonHBox.setPadding(new Insets(25, 25, 25, 25));
+
+		polygonHBox.prefWidthProperty().bind(polygonPane.widthProperty());
+		polygonHBox.getChildren().addAll(polygonText, polygonField, polygonButton);
+		polygonPane.getChildren().add(polygonHBox);
+		verticalPane.getChildren().add(polygonPane);
+
+		Button printButton = new Button("Print");
+		printButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				Platform.runLater(new Runnable() {
+					@Override
+					public void run() {
+						// printMap();
+						saveMap();
+					}
+				});
+			}
+		});
+
+		verticalPane.getChildren().add(printButton);
 	}
 
 	private void displayRenderedImage() {
@@ -235,6 +298,7 @@ public class MapPane extends GameExplorerSubPane implements RenderManagerListene
 		modules.add(new ImageSaveMapModule());
 		modules.add(new PipeMapModule());
 		modules.add(new RemoteMeasureModule());
+		modules.add(new PrintFunctionsModule());
 
 		for (AbstractMapModule module : modules) {
 			module.setCommunicator(getCommunicator());

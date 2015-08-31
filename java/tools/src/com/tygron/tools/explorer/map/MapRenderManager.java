@@ -16,6 +16,7 @@ import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Shape;
 import javafx.scene.transform.Scale;
 import javafx.scene.transform.Transform;
+import com.tygron.pub.api.data.misc.GeometryObject;
 import com.tygron.pub.logger.Log;
 import com.tygron.pub.utils.StringUtils;
 
@@ -136,7 +137,7 @@ public class MapRenderManager {
 				// getCommunicator().setStatus("Creating data polygons");
 				alerted = true;
 			}
-			Shape polygon = ShapeUtils.createPolygon((String) subMap.get(POLYGONS));
+			Shape polygon = ShapeUtils.createPolygon((Map<String, ?>) subMap.get(POLYGONS));
 			if (polygon == null) {
 				continue;
 			}
@@ -164,7 +165,7 @@ public class MapRenderManager {
 
 				if (data.containsKey(POLYGONS)) {
 					newShapes = new LinkedList<Shape>();
-					Shape newShape = ShapeUtils.createPolygon((String) data.get(POLYGONS));
+					Shape newShape = ShapeUtils.createPolygon((Map<String, ?>) data.get(POLYGONS));
 					if (newShape != null) {
 						newShapes.add(newShape);
 					}
@@ -202,7 +203,7 @@ public class MapRenderManager {
 
 	public void displayUserDefinedPolygon(String polygonString) {
 		resetPolygonGroup(definedPolygonGroup);
-		Shape renderedPolygon = ShapeUtils.createPolygon(polygonString);
+		Shape renderedPolygon = ShapeUtils.createPolygon(GeometryObject.getGeometryObject(polygonString));
 		if (renderedPolygon != null) {
 			renderedPolygon.setFill(Color.CRIMSON);
 			definedPolygonGroup.getChildren().add(renderedPolygon);

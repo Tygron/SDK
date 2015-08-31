@@ -26,6 +26,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Shape;
 import javafx.scene.text.Text;
+import com.tygron.pub.api.data.misc.GeometryObject;
 import com.tygron.pub.api.enums.MapLink;
 import com.tygron.pub.logger.Log;
 import com.tygron.pub.utils.StringUtils;
@@ -320,7 +321,8 @@ public class PipeMapModule extends AbstractMapModule {
 					}
 					Shape newShape = null;
 					try {
-						newShape = ShapeUtils.createPolygon((String) building.get(POLYGONS));
+						newShape = ShapeUtils.createPolygon(GeometryObject
+								.getGeometryObject((Map<String, ?>) building.get(POLYGONS)));
 					} catch (Exception e) {
 						Log.warning("Building " + buildingID + "'s " + POLYGONS + " not parsable.");
 						continue;

@@ -1,12 +1,58 @@
 package com.tygron.tools.explorer.map;
 
+import java.util.List;
+import java.util.Map;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Shape;
+import com.tygron.pub.api.data.misc.GeometryObject;
 import com.tygron.pub.logger.Log;
 import com.tygron.pub.utils.StringUtils;
 
 public class ShapeUtils {
+
+	public static Shape createPolygon(GeometryObject coordinates) {
+
+		if (!coordinates.getGeometryType().equals("MultiPolygon")) {
+			return null;
+		}
+		List<List<List<List<Double>>>> fullpolygonList = (List<List<List<List<Double>>>>) coordinates
+				.getCoordinates();
+
+		Shape mainShape = null;
+
+		for (List<List<List<Double>>> singleOutline : fullpolygonList) {
+			boolean add = true;
+			for (List<List<Double>> singlePolygon : singleOutline) {
+				Polygon newPolygon = new Polygon();
+				for (List<Double> singleCoordinate : singlePolygon) {
+					if (singleCoordinate.size() != 2) {
+						Log.warning("Invalid coordinate: " + singleCoordinate);
+						continue;
+					}
+					newPolygon.getPoints().addAll(singleCoordinate.get(0), singleCoordinate.get(1));
+				}
+				if (add) {
+					mainShape = ((mainShape == null) ? mainShape = newPolygon : Shape.union(mainShape,
+							newPolygon));
+				} else {
+					mainShape = Shape.subtract(mainShape, newPolygon);
+				}
+				add = false;
+			}
+		}
+		if (mainShape != null) {
+			// mainShape.setFill(Color.CYAN);
+			mainShape.setFill(Color.TRANSPARENT);
+			mainShape.setStroke(Color.BLACK);
+		}
+
+		return mainShape;
+	}
+
+	public static Shape createPolygon(Map<String, ?> shapeMap) {
+		return createPolygon(GeometryObject.getGeometryObject(shapeMap));
+	}
 
 	public static Shape createPolygon(String polygonString) {
 		// TODO: This should be done by a library such as Java Topology Suite
