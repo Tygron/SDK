@@ -283,7 +283,10 @@ public class PlanMultipleBuildingsExample {
 
 							// create a polygon definition. Based on the location we determined randomly, and
 							// the size.
-							String newMultiPolygon = "MULTIPOLYGON (((%d.0 %d.0, %d.0 %d.0, %d.0 %d.0, %d.0 %d.0, %d.0 %d.0)))";
+							// String newMultiPolygon =
+							// "MULTIPOLYGON (((%d.0 %d.0, %d.0 %d.0, %d.0 %d.0, %d.0 %d.0, %d.0 %d.0)))";
+
+							String newMultiPolygon = "{ \"type\" : \"MultiPolygon\", \"coordinates\" : [ [ [ [ %d.0 %d.0 ], [ %d.0, %d.0 ], [ %d.0, %d.0 ], [ %d.0, %d.0 ], [ %d.0, %d.0 ] ] ] ] }";
 							newMultiPolygon = String.format(newMultiPolygon, x, y, x, y + size, x + size, y
 									+ size, x + size, y, x, y);
 

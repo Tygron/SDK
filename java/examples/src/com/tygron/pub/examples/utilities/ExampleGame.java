@@ -26,6 +26,8 @@ public class ExampleGame {
 
 	public static final ExampleBuilding BUILDING1 = new ExampleBuilding(663, 4);
 
-	public static final String[] STAKEHOLDER_OWNED_LOCATIONS = new String[] { "MULTIPOLYGON (((682.175 1372.371, 690.298 1390.647, 735.988 1370.34, 727.865 1352.063, 682.175 1372.371)))" };
+	public static final String[] STAKEHOLDER_OWNED_LOCATIONS = new String[] { "{ \"type\" : \"MultiPolygon\", \"coordinates\" : [ [ [ [ 682.175, 1372.371 ], [ 690.298, 1390.647 ], [ 735.988, 1370.34 ], [ 727.865, 1352.063 ], [ 682.175, 1372.371 ] ] ] ] }"
+	// ,"MULTIPOLYGON (((682.175 1372.371, 690.298 1390.647, 735.988 1370.34, 727.865 1352.063, 682.175 1372.371)))"
+	};
 
 }
