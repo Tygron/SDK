@@ -6,8 +6,10 @@ import com.tygron.pub.api.data.item.Building;
 import com.tygron.pub.api.data.item.Message;
 import com.tygron.pub.api.data.item.Popup;
 import com.tygron.pub.api.data.item.UpgradeType;
+import com.tygron.pub.api.data.misc.GeometryObject;
 import com.tygron.pub.api.enums.MapLink;
 import com.tygron.pub.api.enums.events.SessionEvent;
+import com.tygron.pub.utils.JsonUtils;
 import com.tygron.pub.utils.StringUtils;
 
 public class PlayerModule extends DataModule {
@@ -30,7 +32,7 @@ public class PlayerModule extends DataModule {
 		isPlayerReady();
 
 		sendPlayerEvent(SessionEvent.BUILDING_PLAN_CONSTRUCTION, Integer.toString(functionID),
-				Integer.toString(floors), location);
+				Integer.toString(floors), JsonUtils.mapJsonToMap(location));
 	}
 
 	/**
@@ -57,30 +59,32 @@ public class PlayerModule extends DataModule {
 	 * Plan the demolition of a building.
 	 * @param locationString A multipolygon description indicating the location to demolish.
 	 */
-	public void buildingPlanDemolish(String locationString) {
+	public void buildingPlanDemolish(String location) {
 		isPlayerReady();
 
-		sendPlayerEvent(SessionEvent.BUILDING_PLAN_DEMOLISH_COORDINATES, locationString, "SURFACE");
+		sendPlayerEvent(SessionEvent.BUILDING_PLAN_DEMOLISH_COORDINATES, JsonUtils.mapJsonToMap(location),
+				"SURFACE");
 	}
 
 	/**
 	 * Plan the demolition of an underground construction.
 	 * @param locationString A multipolygon description indicating the location to demolish.
 	 */
-	public void buildingPlanDemolishUnderground(String locationString) {
+	public void buildingPlanDemolishUnderground(String location) {
 		isPlayerReady();
 
-		sendPlayerEvent(SessionEvent.BUILDING_PLAN_DEMOLISH_COORDINATES, locationString, "UNDERGROUND");
+		sendPlayerEvent(SessionEvent.BUILDING_PLAN_DEMOLISH_COORDINATES, JsonUtils.mapJsonToMap(location),
+				"UNDERGROUND");
 	}
 
 	/**
 	 * Plan the revertion of actions in an area.
 	 * @param locationString A multipolygon description indicating the location to revert.
 	 */
-	public void buildingPlanRevert(String locationString) {
+	public void buildingPlanRevert(String location) {
 		isPlayerReady();
 
-		sendPlayerEvent(SessionEvent.BUILDING_REVERT_POLYGON, locationString);
+		sendPlayerEvent(SessionEvent.BUILDING_REVERT_POLYGON, JsonUtils.mapJsonToMap(location));
 	}
 
 	/**
@@ -103,7 +107,8 @@ public class PlayerModule extends DataModule {
 	public void buildingPlanUpgrade(int upgradeID, String location) {
 		isPlayerReady();
 
-		sendPlayerEvent(SessionEvent.BUILDING_PLAN_UPGRADE, Integer.toString(upgradeID), location);
+		sendPlayerEvent(SessionEvent.BUILDING_PLAN_UPGRADE, Integer.toString(upgradeID),
+				JsonUtils.mapJsonToMap(location));
 	}
 
 	/**
@@ -163,8 +168,10 @@ public class PlayerModule extends DataModule {
 	 */
 	public void ping(int x, int y) {
 		isPlayerReady();
-		sendPlayerEvent(SessionEvent.STAKEHOLDER_SET_LOCATION, "POINT (" + Integer.toString(x)
-				+ StringUtils.SPACE + Integer.toString(y) + ")", StringUtils.TRUE);
+		sendPlayerEvent(
+				SessionEvent.STAKEHOLDER_SET_LOCATION,
+				GeometryObject.getGeometryObject("Point",
+						"[" + Integer.toString(x) + ", " + Integer.toString(y) + "]"), StringUtils.TRUE);
 	}
 
 	/**
@@ -243,8 +250,8 @@ public class PlayerModule extends DataModule {
 	 * @param params The parameters (excluding the ID of the enacting stakeholder.
 	 * @return The DataPackage resulting from the call.
 	 */
-	private DataPackage sendPlayerEvent(SessionEvent event, String... params) {
-		String[] newParams = new String[params.length + 1];
+	private DataPackage sendPlayerEvent(SessionEvent event, Object... params) {
+		Object[] newParams = new Object[params.length + 1];
 		newParams[0] = Integer.toString(stakeholderID);
 		System.arraycopy(params, 0, newParams, 1, params.length);
 

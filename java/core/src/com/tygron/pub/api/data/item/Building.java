@@ -1,6 +1,7 @@
 package com.tygron.pub.api.data.item;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.tygron.pub.api.data.misc.GeometryObject;
 import com.tygron.pub.utils.StringUtils;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -66,7 +67,7 @@ public class Building extends Item {
 	private int floors = StringUtils.NOTHING;
 	private int ownerID = StringUtils.NOTHING;
 	private int predecessorID = StringUtils.NOTHING;
-	private String polygons = StringUtils.EMPTY;
+	private GeometryObject polygons = null;
 	private String state = StringUtils.EMPTY;
 
 	public int getFloors() {
@@ -82,7 +83,7 @@ public class Building extends Item {
 	}
 
 	public String getPolygons() {
-		return polygons;
+		return polygons.toString();
 	}
 
 	public int getPredecessorID() {

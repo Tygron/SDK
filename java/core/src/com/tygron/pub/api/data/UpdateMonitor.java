@@ -47,8 +47,8 @@ public class UpdateMonitor {
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	private static class UpdateReceiverObject {
-		private Map<String, Map<String, List<Map<String, Map<?, ?>>>>> items;
-		private Map<String, Map<String, List<Map<String, Map<?, ?>>>>> deletes;
+		private Map<String, List<Map<?, ?>>> items;
+		private Map<String, List<Map<?, ?>>> deletes;
 	}
 
 	private boolean listening = false;
@@ -228,7 +228,6 @@ public class UpdateMonitor {
 		}
 
 		alertListeners(items, deletes);
-
 	}
 
 	/**

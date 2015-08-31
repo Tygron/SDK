@@ -18,6 +18,7 @@ import com.tygron.pub.api.data.item.Stakeholder;
 import com.tygron.pub.api.enums.MapLink;
 import com.tygron.pub.api.enums.events.AnswerEvent;
 import com.tygron.pub.api.enums.events.SessionEvent;
+import com.tygron.pub.logger.Log;
 
 public class GamePlayUtils {
 
@@ -67,8 +68,7 @@ public class GamePlayUtils {
 
 		try {
 			List<?> buildingsList = JsonUtils.mapJsonToList(data.getContent());
-			buildings = DataUtils.dataListToItemMap((List<Map<String, Map<?, ?>>>) buildingsList,
-					Building.class);
+			buildings = DataUtils.dataListToItemMap((List<Map<?, ?>>) buildingsList, Building.class);
 		} catch (NullPointerException e) {
 			return null;
 		} catch (IllegalArgumentException e) {
@@ -117,13 +117,15 @@ public class GamePlayUtils {
 
 		try {
 			List<?> buildingsList = JsonUtils.mapJsonToList(data.getContent());
-			buildings = DataUtils.dataListToItemMap((List<Map<String, Map<?, ?>>>) buildingsList,
-					Building.class);
+			buildings = DataUtils.dataListToItemMap((List<Map<?, ?>>) buildingsList, Building.class);
 		} catch (NullPointerException e) {
+			Log.warning("Data from which to get buiildings was null.");
 			return null;
 		} catch (IllegalArgumentException e) {
+			Log.warning("Data from which to get buildings could not be parsed.");
 			return null;
 		} catch (ClassCastException e) {
+			Log.warning("Data was of unexpected type.");
 			return null;
 		}
 		return getBuildings(ownerID, location, functionID, floors, buildings.values());
@@ -184,8 +186,7 @@ public class GamePlayUtils {
 
 		try {
 			List<?> messagesList = JsonUtils.mapJsonToList(data.getContent());
-			messages = DataUtils
-					.dataListToItemMap((List<Map<String, Map<?, ?>>>) messagesList, Message.class);
+			messages = DataUtils.dataListToItemMap((List<Map<?, ?>>) messagesList, Message.class);
 		} catch (NullPointerException e) {
 			return null;
 		} catch (IllegalArgumentException e) {
@@ -222,8 +223,7 @@ public class GamePlayUtils {
 
 		try {
 			List<?> stakeholderList = JsonUtils.mapJsonToList(data.getContent());
-			stakeholders = DataUtils.dataListToItemMap((List<Map<String, Map<?, ?>>>) stakeholderList,
-					Stakeholder.class);
+			stakeholders = DataUtils.dataListToItemMap((List<Map<?, ?>>) stakeholderList, Stakeholder.class);
 		} catch (NullPointerException e) {
 			return null;
 		} catch (IllegalArgumentException e) {
@@ -260,7 +260,7 @@ public class GamePlayUtils {
 
 		try {
 			List<?> popupsList = JsonUtils.mapJsonToList(data.getContent());
-			popups = DataUtils.dataListToItemMap((List<Map<String, Map<?, ?>>>) popupsList, Popup.class);
+			popups = DataUtils.dataListToItemMap((List<Map<?, ?>>) popupsList, Popup.class);
 		} catch (NullPointerException e) {
 			return null;
 		} catch (IllegalArgumentException e) {

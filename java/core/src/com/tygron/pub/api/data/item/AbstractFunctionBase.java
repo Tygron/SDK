@@ -2,7 +2,6 @@ package com.tygron.pub.api.data.item;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.tygron.pub.utils.StringUtils;
 
@@ -199,7 +198,7 @@ public class AbstractFunctionBase extends Item {
 			defaultValues.put(CategoryValue.SELL_PRICE_M2, sell);
 		}
 
-		public double defaultValue(CategoryValue categoryValue) {
+		public Double defaultValue(CategoryValue categoryValue) {
 			return defaultValues.getOrDefault(categoryValue, null);
 		}
 	}
@@ -235,8 +234,7 @@ public class AbstractFunctionBase extends Item {
 	private String description = StringUtils.EMPTY;
 	private String name = StringUtils.EMPTY;
 	private Map<FunctionValue, Double> functionValues = new HashMap<FunctionValue, Double>();
-	private Map<FunctionCategory, Map<String, Map<CategoryValue, Double>>> categoryValues = new HashMap<FunctionCategory, Map<String, Map<CategoryValue, Double>>>();
-	private Map<FunctionCategory, Map<CategoryValue, Double>> collapsedCategoryValues = null;
+	private Map<FunctionCategory, Map<CategoryValue, Double>> categoryValues = new HashMap<FunctionCategory, Map<CategoryValue, Double>>();
 
 	protected Double getCategoryValue(FunctionCategory category, CategoryValue categoryValue) {
 		if (!getCategoryValues().containsKey(category)) {
@@ -249,17 +247,7 @@ public class AbstractFunctionBase extends Item {
 	}
 
 	protected Map<FunctionCategory, Map<CategoryValue, Double>> getCategoryValues() {
-		if (collapsedCategoryValues != null) {
-			return collapsedCategoryValues;
-		}
-		Map<FunctionCategory, Map<CategoryValue, Double>> returnable = new HashMap<FunctionCategory, Map<CategoryValue, Double>>();
-		for (Entry<FunctionCategory, Map<String, Map<CategoryValue, Double>>> value : categoryValues
-				.entrySet()) {
-
-			returnable.put(value.getKey(), value.getValue().get("HashMap"));
-		}
-		collapsedCategoryValues = returnable;
-		return returnable;
+		return categoryValues;
 	}
 
 	protected String getDescription() {

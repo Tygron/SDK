@@ -165,7 +165,7 @@ public class DataModule {
 
 		try {
 			List<?> itemList = JsonUtils.mapJsonToList(data.getContent());
-			functions = DataUtils.dataListToItemMap((List<Map<String, Map<?, ?>>>) itemList, itemType);
+			functions = DataUtils.dataListToItemMap((List<Map<?, ?>>) itemList, itemType);
 		} catch (NullPointerException e) {
 			Log.exception(e, "Nullpointer has occured.");
 			return null;

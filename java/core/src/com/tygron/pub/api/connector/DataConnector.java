@@ -278,10 +278,6 @@ public class DataConnector {
 		return new DataPackage(receivedString, requestTime, statusCode);
 	}
 
-	public DataPackage makeRequestToURL(String url, RequestType requestType, String... params) {
-		return makeRequestToURL(url, requestType, (Object[]) params);
-	}
-
 	/**
 	 * Send POST request to [url], without parameters
 	 */
@@ -292,21 +288,21 @@ public class DataConnector {
 	/**
 	 * Send POST request to [url]
 	 */
-	public DataPackage sendData(String url, String... params) {
+	public DataPackage sendData(String url, Object... params) {
 		return makeRequestToURL(url, RequestType.POST, params);
 	}
 
 	/**
 	 * Send POST request to https://www.tygronengine.com/api/services/event/[url]
 	 */
-	public DataPackage sendDataToServer(ServerEventType event, String... params) {
+	public DataPackage sendDataToServer(ServerEventType event, Object... params) {
 		return sendDataToServer(event.url(), params);
 	}
 
 	/**
 	 * Send POST request to https://www.tygronengine.com/api/services/event/[url]
 	 */
-	public DataPackage sendDataToServer(String url, String... params) {
+	public DataPackage sendDataToServer(String url, Object... params) {
 		String fullURL = createFullURL(url, true, false, false, true, true);
 		return makeRequestToURL(fullURL, RequestType.POST, params);
 	}
@@ -314,14 +310,14 @@ public class DataConnector {
 	/**
 	 * Send POST request to https://www.tygronengine.com/api/slots/X/event/[url]
 	 */
-	public DataPackage sendDataToServerSession(SessionEventType event, String... params) {
+	public DataPackage sendDataToServerSession(SessionEventType event, Object... params) {
 		return sendDataToServerSession(event.url(), params);
 	}
 
 	/**
 	 * Send POST request to https://www.tygronengine.com/api/slots/X/event/[url]
 	 */
-	public DataPackage sendDataToServerSession(String url, String... params) {
+	public DataPackage sendDataToServerSession(String url, Object... params) {
 		String fullURL = createFullURL(url, true, true, false, false, true);
 		return makeRequestToURL(fullURL, RequestType.POST, params);
 	}

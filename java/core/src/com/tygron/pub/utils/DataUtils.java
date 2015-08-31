@@ -42,12 +42,11 @@ public class DataUtils {
 	/**
 	 * Collapse a map returned by the long-polling update mechanic of the API into a standard format.
 	 * @param map The map of data as returned by the update mechanic of the API, of the format Map&lt;String,
-	 *            Map&lt;String, List&lt;Map&lt;String, Map&lt;?, ?&gt;&gt;&gt;&gt;&gt;.
+	 *            List&lt;Map&lt;?, ?&gt;&gt;&gt;.
 	 * @return Map&lt;String, Map&lt;Integer, Map&lt;?, ?&gt;&gt;&gt;, where the String key is a MapLink, the
-	 *         Integer is an itemID and the niclosed map represent a single item of data.
+	 *         Integer is an itemID and the enclosed map represent a single item of data.
 	 */
-	public static Map<String, Map<Integer, Map<?, ?>>> collapseUpdateMap(
-			Map<String, Map<String, List<Map<String, Map<?, ?>>>>> map) {
+	public static Map<String, Map<Integer, Map<?, ?>>> collapseUpdateMap(Map<String, List<Map<?, ?>>> map) {
 		if (map == null) {
 			return null;
 		}
@@ -55,39 +54,8 @@ public class DataUtils {
 		Map<String, Map<Integer, Map<?, ?>>> returnable = new HashMap<String, Map<Integer, Map<?, ?>>>();
 
 		try {
-			for (Entry<String, Map<String, List<Map<String, Map<?, ?>>>>> entry : map.entrySet()) {
-				HashMap<Integer, Map<?, ?>> returnableItemMap = new HashMap<Integer, Map<?, ?>>();
-
-				returnable.put(entry.getKey(), returnableItemMap);
-
-				Map<String, List<Map<String, Map<?, ?>>>> firstChild = entry.getValue();
-
-				if (firstChild.size() > 1) {
-					throw new IndexOutOfBoundsException();
-				}
-
-				for (List<Map<String, Map<?, ?>>> secondChildObject : firstChild.values()) {
-					List<Map<String, Map<?, ?>>> secondChild = secondChildObject;
-					for (Map<String, Map<?, ?>> thirdChild : secondChild) {
-						if (thirdChild.size() > 1) {
-							throw new IndexOutOfBoundsException();
-						}
-						for (Map<?, ?> item : thirdChild.values()) {
-							Integer itemID = StringUtils.NOTHING;
-							try {
-								itemID = (Integer) item.get("id");
-							} catch (NumberFormatException e) {
-								String failString = "Failed to parse id of item"
-										+ (item.toString().length() > 200 ? ": " + item.toString()
-												: ", to large to print.");
-								Log.exception(e, failString);
-								break;
-							}
-							returnableItemMap.put(itemID, item);
-						}
-					}
-				}
-
+			for (Entry<String, List<Map<?, ?>>> entry : map.entrySet()) {
+				returnable.put(entry.getKey(), dataListToMap(entry.getValue()));
 			}
 		} catch (ClassCastException e) {
 			Log.exception(e, "Failed to collapse map, because a collection was not of the expected type.");
@@ -96,7 +64,7 @@ public class DataUtils {
 		return returnable;
 	}
 
-	public static <T> Map<Integer, T> dataListToItemMap(List<Map<String, Map<?, ?>>> list, Class<T> target) {
+	public static <T> Map<Integer, T> dataListToItemMap(List<Map<?, ?>> list, Class<T> target) {
 		Map<Integer, Map<?, ?>> map = dataListToMap(list);
 		if (list == null) {
 			return null;
@@ -105,13 +73,13 @@ public class DataUtils {
 	}
 
 	/**
-	 * Collapse a list returned by the data list URLs in the API into a standard format.
-	 * @param map The map list data as returned by the data list URLs of the API, of the format
-	 *            List&lt;Map&lt;String, Map&lt;?, ?&gt&gt&gt.
-	 * @return Map&lt;String, Map&lt;Integer, Map&lt;?, ?&gt;&gt;&gt;, where the String key is a MapLink, the
-	 *         Integer is an itemID and the niclosed map represent a single item of data.
+	 * Transform a list of items into a map of items, mapped by their ID.
+	 * @param list The map list data as returned by the data list URLs of the API, of the format
+	 *            List&lt;Map&lt;?, ?&gt&gt.
+	 * @return Map&lt;Integer, Map&lt;?, ?&gt;&gt;, where the String key is a MapLink, the Integer is an
+	 *         itemID and the niclosed map represent a single item of data.
 	 */
-	public static Map<Integer, Map<?, ?>> dataListToMap(List<Map<String, Map<?, ?>>> list) {
+	public static Map<Integer, Map<?, ?>> dataListToMap(List<Map<?, ?>> list) {
 		if (list == null) {
 			return null;
 		}
@@ -119,24 +87,18 @@ public class DataUtils {
 		Map<Integer, Map<?, ?>> returnableItemMap = new HashMap<Integer, Map<?, ?>>();
 
 		try {
-			for (Map<String, Map<?, ?>> firstChild : list) {
-				if (firstChild.size() > 1) {
-					throw new IndexOutOfBoundsException();
+			for (Map<?, ?> item : list) {
+				Integer itemID = StringUtils.NOTHING;
+				try {
+					itemID = (Integer) item.get("id");
+				} catch (NumberFormatException e) {
+					String failString = "Failed to parse id of item"
+							+ (item.toString().length() > 200 ? ": " + item.toString()
+									: ", to large to print.");
+					Log.exception(e, failString);
+					break;
 				}
-
-				for (Map<?, ?> item : firstChild.values()) {
-					Integer itemID = StringUtils.NOTHING;
-					try {
-						itemID = (Integer) item.get("id");
-					} catch (NumberFormatException e) {
-						String failString = "Failed to parse id of item"
-								+ (item.toString().length() > 200 ? ": " + item.toString()
-										: ", to large to print.");
-						Log.exception(e, failString);
-						break;
-					}
-					returnableItemMap.put(itemID, item);
-				}
+				returnableItemMap.put(itemID, item);
 			}
 		} catch (ClassCastException e) {
 			Log.exception(e, "Failed to collapse map, because a collection was not of the expected type.");

@@ -178,8 +178,8 @@ public class ExtendedDataConnector extends DataConnector {
 
 			Map<Integer, Map<?, ?>> progressMap = null;
 			try {
-				progressMap = DataUtils.dataListToMap((List<Map<String, Map<?, ?>>>) (JsonUtils
-						.mapJsonToList(data.getContent())));
+				progressMap = DataUtils.dataListToMap((List<Map<?, ?>>) (JsonUtils.mapJsonToList(data
+						.getContent())));
 			} catch (ClassCastException e) {
 				throw new ClassCastException(
 						"Failed to properly parse progress for the geographical generation process.");

@@ -10,7 +10,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.SerializationFeature;
 
 public class JsonUtils {
 
@@ -20,7 +19,7 @@ public class JsonUtils {
 
 	static {
 		MAPPER = new ObjectMapper();
-		MAPPER.enable(SerializationFeature.INDENT_OUTPUT);
+		// MAPPER.enable(SerializationFeature.INDENT_OUTPUT);
 		MAPPER.enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY);
 
 		MAPPER.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
@@ -33,6 +32,11 @@ public class JsonUtils {
 		READER_LIST = JsonUtils.MAPPER.reader(List.class);
 		READER_MAP = JsonUtils.MAPPER.reader(Map.class);
 
+	}
+
+	public static <T> T castToObject(Map<?, ?> map, Class<T> target) {
+		String json = JsonUtils.mapObjectToJson(map);
+		return JsonUtils.mapJsonToType(json, target);
 	}
 
 	public static <T extends Object> T mapJsonIntoObject(final String json, final T object) {
