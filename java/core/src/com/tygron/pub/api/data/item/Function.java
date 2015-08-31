@@ -3,6 +3,7 @@ package com.tygron.pub.api.data.item;
 import java.util.HashMap;
 import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.tygron.pub.logger.Log;
 import com.tygron.pub.utils.StringUtils;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -26,10 +27,21 @@ public class Function extends AbstractFunctionBase {
 		for (FunctionCategory category : categoryValues.keySet()) {
 			totalWeight += categoryValues.get(category).getOrDefault(CategoryValue.CATEGORY_WEIGHT,
 					category.defaultValue(CategoryValue.CATEGORY_WEIGHT));
-			totalValue += categoryValues.get(category).getOrDefault(CategoryValue.CATEGORY_WEIGHT,
-					category.defaultValue(CategoryValue.CATEGORY_WEIGHT))
-					* categoryValues.get(category).getOrDefault(categoryValue,
-							category.defaultValue(categoryValue));
+			try {
+				totalValue += categoryValues.get(category).getOrDefault(CategoryValue.CATEGORY_WEIGHT,
+						category.defaultValue(CategoryValue.CATEGORY_WEIGHT))
+						* categoryValues.get(category).getOrDefault(categoryValue,
+								category.defaultValue(categoryValue));
+			} catch (NullPointerException e) {
+				if (category.defaultValue(categoryValue) == null) {
+					Log.warning("Null detected, because no default value is present: " + this.getName()
+							+ " : " + category.toString() + " : " + categoryValue.toString());
+					totalValue = 0;
+					// throw new IllegalStateException();
+				} else {
+					throw e;
+				}
+			}
 		}
 
 		if (totalWeight != 0.0) {
