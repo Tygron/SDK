@@ -113,12 +113,15 @@ public class ExtendedDataConnector extends DataConnector {
 
 		String returnableGameName = null;
 
-		DataPackage data = sendDataToServer(ServerEvent.CREATE_PROJECT.url(), gameName, language);
+		DataPackage data = sendDataToServer(ServerEvent.CREATE_PROJECT,
+				gameName.replaceAll("[^a-zA-Z0-9]", "").toLowerCase(), language);
 
 		try {
 			CreateProjectObject gameData = JsonUtils.mapJsonToType(data.getContent(),
 					CreateProjectObject.class);
 			returnableGameName = gameData.fileName;
+		} catch (NullPointerException e) {
+			throw new IllegalArgumentException("Game name is invalid");
 		} catch (Exception e) {
 			throw new UnexpectedException("Failed to retrieve the game name of the created project", e);
 		}
@@ -506,9 +509,6 @@ public class ExtendedDataConnector extends DataConnector {
 
 		DataPackage data = sendDataToServer(ServerEvent.NEW_SESSION.url(), gameMode, gameName, language,
 				null, null);
-		if (data.getContent().equals("INSUFFICIENT_RIGHTS")) {
-			throw new InsufficientRightsException();
-		}
 		String slot = data.getContent();
 
 		return joinSession(null, null, null, clientType, slot, clientAddress, clientName);

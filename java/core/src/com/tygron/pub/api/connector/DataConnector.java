@@ -18,6 +18,8 @@ import com.tygron.pub.api.enums.EventType.SessionEventType;
 import com.tygron.pub.api.enums.MapLink;
 import com.tygron.pub.exceptions.AuthenticationException;
 import com.tygron.pub.exceptions.IncompleteResponseException;
+import com.tygron.pub.exceptions.InsufficientRightsException;
+import com.tygron.pub.exceptions.InvalidRequestException;
 import com.tygron.pub.exceptions.NoSuchServerException;
 import com.tygron.pub.exceptions.PageNotFoundException;
 import com.tygron.pub.logger.Log;
@@ -265,6 +267,14 @@ public class DataConnector {
 
 		if (receivedString == null || StringUtils.EMPTY.equals(receivedString)) {
 			Log.verbose("No contents from request to: " + url);
+		}
+
+		if (statusCode == 400 && StringUtils.INVALID_REQUEST.equals(receivedString)) {
+			throw new InvalidRequestException();
+		}
+
+		if (statusCode == 200 && StringUtils.INSUFFICIENT_RIGHTS.equals(receivedString)) {
+			throw new InsufficientRightsException();
 		}
 
 		if (statusCode == 401) {

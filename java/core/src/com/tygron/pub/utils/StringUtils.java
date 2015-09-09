@@ -20,6 +20,9 @@ public class StringUtils {
 	public static final String FALSE = "false";
 	public static final String NULL = "null";
 
+	public static final String INVALID_REQUEST = "INVALID_REQUEST";
+	public static final String INSUFFICIENT_RIGHTS = "INSUFFICIENT_RIGHTS";
+
 	public static final String EMPTY = "";
 	public static final int NOTHING = -1;
 
