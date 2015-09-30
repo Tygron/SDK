@@ -65,7 +65,7 @@ public class Function extends AbstractFunctionBase {
 				return overrideCategoryValue;
 			}
 		}
-		Double functionCategoryValue = override.getCategoryValue(category, categoryValue);
+		Double functionCategoryValue = getCategoryValue(category, categoryValue);
 		return functionCategoryValue != null ? functionCategoryValue : category.defaultValue(categoryValue);
 	}
 
@@ -97,7 +97,7 @@ public class Function extends AbstractFunctionBase {
 
 	public String getDescription(FunctionOverride override) {
 		if (override != null) {
-			if (override.getDescription() != null) {
+			if (!StringUtils.isEmpty(override.getDescription())) {
 				return override.getDescription();
 			}
 		}
@@ -152,6 +152,15 @@ public class Function extends AbstractFunctionBase {
 		returnable.putAll(super.getFunctionValues());
 
 		return returnable;
+	}
+
+	public String getImageName(FunctionOverride override) {
+		if (override != null) {
+			if (!StringUtils.isEmpty(override.getImageName())) {
+				return override.getImageName();
+			}
+		}
+		return super.getImageName();
 	}
 
 	public String getName(FunctionOverride override) {

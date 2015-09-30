@@ -10,8 +10,10 @@ import com.tygron.pub.utils.StringUtils;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class UpgradeType extends Item {
 
-	private String description = StringUtils.EMPTY;
 	private String name = StringUtils.EMPTY;
+	private String description = StringUtils.EMPTY;
+	private String imageName = StringUtils.EMPTY;
+	private double costsPerM2 = StringUtils.NOTHING;
 
 	private List<Map<String, Integer>> pairs = new LinkedList<Map<String, Integer>>();
 	private Map<Integer, Integer> collapsedPairs = null;
@@ -20,8 +22,16 @@ public class UpgradeType extends Item {
 		return description;
 	}
 
+	public String getImageName() {
+		return imageName;
+	}
+
 	public String getName() {
 		return name;
+	}
+
+	public Double getPrice() {
+		return costsPerM2;
 	}
 
 	public Map<Integer, Integer> getUpgradePairs() {

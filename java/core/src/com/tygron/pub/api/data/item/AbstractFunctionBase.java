@@ -230,8 +230,9 @@ public class AbstractFunctionBase extends Item {
 			TRAFFIC_LANES;
 	}
 
-	private String description = StringUtils.EMPTY;
 	private String name = StringUtils.EMPTY;
+	private String description = StringUtils.EMPTY;
+	private String imageName = StringUtils.EMPTY;
 	private Map<FunctionValue, Double> functionValues = new HashMap<FunctionValue, Double>();
 	private Map<FunctionCategory, Map<CategoryValue, Double>> categoryValues = new HashMap<FunctionCategory, Map<CategoryValue, Double>>();
 
@@ -274,6 +275,10 @@ public class AbstractFunctionBase extends Item {
 
 	protected Map<FunctionValue, Double> getFunctionValues() {
 		return functionValues;
+	}
+
+	protected String getImageName() {
+		return this.imageName;
 	}
 
 	protected String getName() {

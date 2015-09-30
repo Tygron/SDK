@@ -12,7 +12,7 @@ public class FunctionOverride extends AbstractFunctionBase {
 
 	@Override
 	public String getDescription() {
-		return super.getName();
+		return super.getDescription();
 	}
 
 	@Override
