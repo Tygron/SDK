@@ -1,4 +1,7 @@
-# The Tygron SDK
+# This version of the SDK is currently deprecated. For the current SDK, please visit [https://engine.tygron.com/developer](https://engine.tygron.com/developer).
+
+
+
 These are the open-source files for the Tygron SDK, which will allow you to easily create Java applications capable of communicating with the Tygron Engine.
 
 To make use of the SDK, you will need a valid Tygron Account which your application can use to authenticate itself. Your application will have the same access rights as your account allows.
